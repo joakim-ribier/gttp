@@ -23,20 +23,14 @@ Thanks to [Ato Araki](https://github.com/atotto)
 ## Installation
 
 ```bash
-$ cd $HOME
+# Download the Go project
+$ go get github.com/joakim-ribier/gttp
 
-# download all dependencies libraries
-$ go get github.com/rivo/tview
-$ go get github.com/atotto/clipboard
-
-# clone the project
-$ git clone $HOME/go/src/gttp
-
-# build the project
+# Build
 $ cd $HOME/go/src/gttp
 $ go build
 
-# execute go app
+# Execute
 $ ./gttp data.json
 ```
 
