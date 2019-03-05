@@ -32,11 +32,8 @@ func (c Context) GetEnvsName() core.StringSlice {
 	for key := range c.Env {
 		tab = append(tab, strings.ToLower(key))
 	}
-	if len(tab) == 0 {
-		tab = append(tab, "default")
-	}
 	sort.Strings(tab)
-	return tab
+	return append([]string{"default"}, tab...)
 }
 
 // Add adds new variable to an environment
