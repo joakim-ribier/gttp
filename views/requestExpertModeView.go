@@ -44,6 +44,10 @@ func NewRequestExpertModeView(app *tview.Application, ev *models.Event) *Request
 	labels["contentTypePreview"] = "\"Content-Type\" list Preview"
 	labels["add"] = "Add"
 	labels["remove"] = "Remove"
+	labels["projectName"] = "Project Name"
+	labels["alias"] = "Alias"
+	labels["method"] = "Method"
+	labels["url"] = "URL"
 
 	return &RequestExpertModeView{
 		App:    app,
@@ -136,8 +140,8 @@ func (view *RequestExpertModeView) makeAddContentTypePage(mapMenuToFocusPrmt map
 		makeRequestData := view.Event.GetMDR()
 		makeRequestData.ContentType = option
 
-		// Update makeRequestData
-		view.Event.UpdateMDR(makeRequestData)
+		// Update request
+		view.updateMDR(makeRequestData)
 	})
 
 	// Add listener to refresh primitive when the MakeRequestData is changing...
@@ -192,7 +196,6 @@ func (view *RequestExpertModeView) makeAddHeaderPage(mapMenuToFocusPrmt map[stri
 			sb.WriteString("[blue]" + k + "[white] " + v)
 			sb.WriteString("\r\n\r\n")
 		}
-
 		textView.SetText(sb.String())
 	}
 
@@ -263,8 +266,8 @@ func (view *RequestExpertModeView) makeAddHeaderPage(mapMenuToFocusPrmt map[stri
 		})
 		dropDrownPrmt.SetCurrentOption(len(makeRequestData.MapRequestHeaderKeyValue) - 1)
 
-		// Update makeRequestData
-		view.Event.UpdateMDR(makeRequestData)
+		// Update request
+		view.updateMDR(makeRequestData)
 		displayPreview(previewPrmt)
 	})
 
@@ -295,8 +298,8 @@ func (view *RequestExpertModeView) makeAddHeaderPage(mapMenuToFocusPrmt map[stri
 			selectedEventDropDown(slice[0])
 		}
 
-		// Update makeRequestData
-		view.Event.UpdateMDR(makeRequestData)
+		// Update request
+		view.updateMDR(makeRequestData)
 		displayPreview(previewPrmt)
 	})
 
@@ -366,8 +369,8 @@ func (view *RequestExpertModeView) makeAddBodyPage(mapMenuToFocusPrmt map[string
 		makeRequestData := view.Event.GetMDR()
 		makeRequestData.Body = utils.GetInputFieldForm(formPrmt, view.Labels["body"]).GetText()
 
-		// Update makeRequestData
-		view.Event.UpdateMDR(makeRequestData)
+		// Update request
+		view.updateMDR(makeRequestData)
 		previewPrmt.SetText(makeRequestData.Body)
 	})
 
@@ -422,27 +425,36 @@ func (view *RequestExpertModeView) displayPreview(textView *tview.TextView, make
 	textView.SetText("")
 	var sb strings.Builder
 
-	sb.WriteString("[yellow]URL[white] " + makeRequestData.URL.ReplaceContext(makeRequestData.MapRequestHeaderKeyValue).String())
+	sb.WriteString("[yellow]" + view.Labels["projectName"] + "[white]: " + makeRequestData.ProjectName)
+	sb.WriteString("\r\n")
+	sb.WriteString("[yellow]" + view.Labels["alias"] + "[white]: " + makeRequestData.Alias)
 	sb.WriteString("\r\n\r\n")
 
-	sb.WriteString("[yellow]Content Type[white] " + makeRequestData.ContentType)
+	sb.WriteString("[yellow]" + view.Labels["method"] + "[white]: " + makeRequestData.Method.String())
+	sb.WriteString("\r\n")
+	sb.WriteString("[yellow]" + view.Labels["url"] + "[white]: " + makeRequestData.URL.ReplaceContext(makeRequestData.MapRequestHeaderKeyValue).String())
 	sb.WriteString("\r\n\r\n")
 
-	sb.WriteString("[yellow]Headers\r\n")
-	for k, v := range makeRequestData.GetHTTPHeaderValues() {
-		sb.WriteString("\r\n")
+	sb.WriteString("[yellow]" + view.Labels["contentType"] + "[white]: " + makeRequestData.ContentType)
+	sb.WriteString("\r\n")
+	sb.WriteString("[yellow]" + view.Labels["headers"] + ":\r\n")
+	for k, v := range makeRequestData.MapRequestHeaderKeyValue {
 		sb.WriteString("[blue]" + k + "[white] " + v)
 		sb.WriteString("\r\n")
 	}
-
 	sb.WriteString("\r\n")
 
-	sb.WriteString("[yellow]Body\r\n\r\n")
+	sb.WriteString("[yellow]" + view.Labels["body"] + ":")
 	if makeRequestData.Body != "" {
+		sb.WriteString("\r\n")
 		sb.WriteString(makeRequestData.Body)
 	}
-
 	textView.SetText(sb.String())
+}
 
-	view.Event.UpdateMDR(makeRequestData)
+func (view *RequestExpertModeView) updateMDR(data models.MakeRequestData) {
+	view.Event.UpdateMDR(data)
+	if update, is := view.Event.AddListenerMRD["requestExpertModeViewPreviewPage"]; is {
+		update(data)
+	}
 }

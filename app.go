@@ -151,7 +151,7 @@ func drawMainComponents(app *tview.Application) tview.Primitive {
 		AddItem(drawRightPanel(), 1, 2, 1, 1, 0, 0, false).
 		AddItem(shortcutInfoTextPrmt, 2, 0, 1, 3, 0, 0, false)
 
-	frame := tview.NewFrame(grid).SetBorders(0, 0, 0, 0, 0, 0)
+	frame := tview.NewFrame(grid).SetBorders(1, 0, 1, 0, 1, 1)
 	frame.SetBorder(true).SetTitle(" " + utils.Subtitle + " ")
 
 	return frame
