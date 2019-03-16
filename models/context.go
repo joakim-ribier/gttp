@@ -7,6 +7,8 @@ import (
 	"github.com/joakim-ribier/gttp/core"
 )
 
+const defaultValue = "default"
+
 // Context reprensents a context structure
 type Context struct {
 	Env map[string][]ContextVariable
@@ -28,12 +30,15 @@ func NewContextVariable(variable string, value string) ContextVariable {
 
 // GetEnvsName gets all environments name
 func (c Context) GetEnvsName() core.StringSlice {
-	tab := []string{}
+	var tab core.StringSlice = []string{}
 	for key := range c.Env {
 		tab = append(tab, strings.ToLower(key))
 	}
 	sort.Strings(tab)
-	return append([]string{"default"}, tab...)
+	if index := tab.GetIndex(defaultValue); index == -1 {
+		return append([]string{defaultValue}, tab...)
+	}
+	return tab
 }
 
 // Add adds new variable to an environment
@@ -71,9 +76,11 @@ func (c *Context) Remove(env string, variable string) {
 		}
 		return newSlice
 	}
-	c.Env[env] = remove(variable, c.Env[env])
-	if len(c.Env[env]) == 0 && env != "default" {
-		delete(c.Env, env)
+	if _, is := c.Env[env]; is {
+		c.Env[env] = remove(variable, c.Env[env])
+		if len(c.Env[env]) == 0 && env != defaultValue {
+			delete(c.Env, env)
+		}
 	}
 }
 

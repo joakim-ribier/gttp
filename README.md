@@ -4,6 +4,7 @@
 
 * [Dependencies](#dependencies)
 * [Installation](#installation)
+* [Testing](#testing)
 * [Troubleshooting](#troubleshooting)
 
 ## Dependencies
@@ -32,6 +33,27 @@ $ go build
 
 # Execute
 $ ./gttp data.json
+```
+
+## Testing
+
+```bash
+$ go test  ./...
+?   	github.com/joakim-ribier/gttp/httpclient	[no test files]
+ok  	github.com/joakim-ribier/gttp/models	0.001s
+```
+```bash
+$ go test -v ./...
+?   	github.com/joakim-ribier/gttp/httpclient	[no test files]
+=== RUN   TestDefaultValue
+--- PASS: TestDefaultValue (0.00s)
+PASS
+ok  	github.com/joakim-ribier/gttp/models	0.001s
+```
+```bash
+$ go test -cover ./...
+?   	github.com/joakim-ribier/gttp/httpclient	[no test files]
+ok  	github.com/joakim-ribier/gttp/models	0.001s	coverage: 6.1% of statements
 ```
 
 ## Troubleshooting
