@@ -69,7 +69,7 @@ func App() {
 		mapFocusPrmtToShortutText[settingsView.TitlePrmt] = utils.SettingsShortcutsText
 		mapFocusPrmtToShortutText[saveRequestView.TitlePrmt] = utils.SaveRequestShortcutsText
 
-		json.Unmarshal([]byte(getDataFromTheDisk()), &output)
+		unmarshal()
 
 		refreshingTreeAPICpn()
 		refreshingConfig()
@@ -82,7 +82,7 @@ func App() {
 	root := drawMainComponents(app)
 
 	app.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
-		setMessageInfoTextPrmt("Shortcut: " + event.Name() + " - " + time.Now().Format(time.RFC850))
+		setMessageInfoTextPrmt("Shortcut: "+event.Name()+" - "+time.Now().Format(time.RFC850), "info")
 
 		switch event.Key() {
 		case tcell.KeyCtrlA:
@@ -216,7 +216,7 @@ func displayRequestExpertModeViewPage() {
 func executeRequest() {
 	displayRequestResponseViewPage(requestResponseView.ResponsePrmt)
 	requestResponseView.ResetLogBuffer()
-	setMessageInfoTextPrmt("")
+	setMessageInfoTextPrmt("", "info")
 
 	// Get current context to replace all variables
 	_, currentContext := utils.GetDropDownFieldForm(requestFormPrmt, requestExContextPrmtLabel).GetCurrentOption()
@@ -313,28 +313,17 @@ func getDataFromTheDisk() []byte {
 }
 
 func saveCurrentRequest() {
-	// Read data from the disk
-	var data models.Output
-	json.Unmarshal([]byte(getDataFromTheDisk()), &data)
-
-	// Save only the current request
-	data.AddOrReplace(makeRequestData)
-
-	// Write on the disk
-	json, _ := json.Marshal(data)
-	_ = ioutil.WriteFile(appPathFileName, json, 0644)
-
-	output = data
+	// 1. Read disk data
+	unmarshal()
+	// 2. Update output
+	output.AddOrReplace(makeRequestData)
+	// 3. Update disk data
+	marshal()
 }
 
 func getRequestURLPrmtText() string {
 	prmt := utils.GetInputFieldForm(requestFormPrmt, requestURLPrmtLabel)
 	return prmt.GetText()
-}
-
-func newInputView(placeHolder string) *tview.InputField {
-	inputField := tview.NewInputField().SetPlaceholder(placeHolder)
-	return inputField
 }
 
 func newTextView(text string) *tview.TextView {
@@ -369,9 +358,9 @@ func focusPrimitive(prmt tview.Primitive, box *tview.Box) {
 	}
 }
 
-func setMessageInfoTextPrmt(message string) {
+func setMessageInfoTextPrmt(message string, status string) {
 	if message != "" {
-		messageInfoTextPrmt.SetText(utils.FormatLog(message, "info"))
+		messageInfoTextPrmt.SetText(utils.FormatLog(message, status))
 	}
 }
 
@@ -395,37 +384,25 @@ func getConfig() models.Config {
 }
 
 func updateConfig(value models.Config) {
-	// Read data from the disk
-	var data models.Output
-	json.Unmarshal([]byte(getDataFromTheDisk()), &data)
-
-	// Save the config
-	data.Config = value
-
-	// Write on the disk
-	json, _ := json.Marshal(data)
-	_ = ioutil.WriteFile(appPathFileName, json, 0644)
-
-	output = data
-
+	// 1. Read disk data
+	unmarshal()
+	// 2. Update output
+	output.Config = value
+	// 3. Update disk data
+	marshal()
+	// 4. Refresh views
 	refreshingConfig()
 	refreshingTreeAPICpn()
 }
 
 func updateContext(value models.Context) {
-	// Read data from the disk
-	var data models.Output
-	json.Unmarshal([]byte(getDataFromTheDisk()), &data)
-
-	// Save the config
-	data.Context = value
-
-	// Write on the disk
-	json, _ := json.Marshal(data)
-	_ = ioutil.WriteFile(appPathFileName, json, 0644)
-
-	output = data
-
+	// 1. Read disk data
+	unmarshal()
+	// 2. Update output
+	output.Context = value
+	// 3. Update disk data
+	marshal()
+	// 4. Refresh views
 	refreshingContext()
 }
 
@@ -448,6 +425,26 @@ func refreshingTreeAPICpn() {
 func getOutput() models.Output {
 	return output
 }
+
+// ## -- Marshal & unmarshal json
+
+func unmarshal() {
+	if error := json.Unmarshal([]byte(getDataFromTheDisk()), &output); error != nil {
+		setMessageInfoTextPrmt("Error to decode '"+appPathFileName+"' json data file.", "error")
+	}
+}
+
+func marshal() {
+	if json, error := json.Marshal(output); error != nil {
+		setMessageInfoTextPrmt("Error to encode 'output' model.", "error")
+	} else {
+		if error := ioutil.WriteFile(appPathFileName, json, 0644); error != nil {
+			setMessageInfoTextPrmt("Error to encode '"+appPathFileName+"' json data file.", "error")
+		}
+	}
+}
+
+// -- ##
 
 // ## -- Make all views
 

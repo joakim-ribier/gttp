@@ -1,15 +1,11 @@
 package types
 
-import (
-	"fmt"
-)
-
 // Method string type value
 type Method string
 
 // String returns string value
 func (m Method) String() string {
-	return fmt.Sprintf("%s", string(m))
+	return string(m)
 }
 
 // TreeColor returns foreground & background

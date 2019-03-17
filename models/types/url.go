@@ -1,7 +1,6 @@
 package types
 
 import (
-	"fmt"
 	"path"
 	"strings"
 )
@@ -11,7 +10,7 @@ type URL string
 
 // String returns string value
 func (url URL) String() string {
-	return fmt.Sprintf("%s", string(url))
+	return string(url)
 }
 
 // Base returns the end of the url + "~/"

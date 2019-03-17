@@ -60,11 +60,7 @@ func (out Output) SortDataByProject() map[string][]MakeRequestData {
 		if slice == nil {
 			return []MakeRequestData{newValue}
 		}
-		newSlice := []MakeRequestData{newValue}
-		for _, value := range slice {
-			newSlice = append(newSlice, value)
-		}
-		return newSlice
+		return append([]MakeRequestData{newValue}, slice...)
 	}
 
 	new := make(map[string][]MakeRequestData)
