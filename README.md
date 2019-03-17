@@ -1,6 +1,8 @@
 # GTTP - Go HTTP Client for Terminal UIs
 
 [![Go Report Card](https://goreportcard.com/badge/github.com/joakim-ribier/gttp)](https://goreportcard.com/report/github.com/joakim-ribier/gttp)
+[![GolangCI](https://golangci.com/badges/github.com/golangci/golangci-lint.svg)](https://golangci.com)
+[![Codeship Status for joakim-ribier/gttp](https://app.codeship.com/projects/99326050-2b1a-0137-1c6f-3219270c09ea/status?branch=master)](https://app.codeship.com/projects/331117)
 
 ## TOC
 
