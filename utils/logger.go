@@ -1,23 +1,29 @@
 package utils
 
-import "time"
+import (
+	"time"
+
+	"github.com/rivo/tview"
+)
 
 // FormatLog formats the message to display
 func FormatLog(message string, mode string) string {
-	t := time.Now()
-	dateTime := t.Format(time.RFC3339)
+	messageEscaped := tview.Escape(message)
+	dateTime := time.Now().Format(time.RFC3339)
+
 	var value string
 	switch mode {
 	case "error":
-		value = "[red]" + message
+		value = "[red]" + messageEscaped
 	case "debug":
-		value = "[orange]" + message
+		value = "[orange]" + messageEscaped
 	case "warn":
-		value = "[yellow]" + message
+		value = "[yellow]" + messageEscaped
 	case "data":
-		return "[yellow]" + dateTime + " [blue]" + message + "\r\n"
+		return "[yellow]" + dateTime + " [blue]" + messageEscaped + "\r\n"
 	default:
-		value = "[white::-]" + message
+		value = "[white::-]" + messageEscaped
 	}
+
 	return "[yellow]" + dateTime + " " + value
 }

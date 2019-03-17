@@ -15,13 +15,12 @@ const (
 	TitleShortcuts = "Press [blue::ub]Escape[white::-] or Ctrl+[blue::ub]Q[white::-] to exit"
 	GitHubLink     = "~//github.com/joakim-ribier/gttp"
 	TitleAPIText   = `
-   /\/|   ____ _____ _____ ____    /\/|
-  |/\/   / ___|_   _|_   _|  _ \  |/\/
-        | |  _  | |   | | | |_) |
-        | |_| | | |   | | |  __/
-         \____| |_|   |_| |_|
-                            o
-                             o
+	 ____           _____ _____ ____  
+	/ ___|         |_   _|_   _|  _ \ 
+   | |  _   _____    | |   | | | |_) |
+   | |_| | |_____|   | |   | | |  __/ 
+	\____|           |_|   |_| |_|    
+									 
 `
 )
 
@@ -36,21 +35,19 @@ const (
 
 // Represents App shortcuts list
 const (
-	ShortcutQ = "Ctrl+[blue::ub]Q[white::-] Exit"
-	ShortcutD = "Ctrl+[blue::ub]D[white::-] Result View"
-	ShortcutR = "Ctrl+[blue::ub]R[white::-] Request"
-	ShortcutE = "Ctrl+[blue::ub]E[white::-] Execute"
-	ShortcutJ = "Ctrl+[blue::ub]J[white::-] Select API"
+	ShortcutD  = "Ctrl+[blue::ub]D[white::-] Response View"
+	ShortcutE  = "Ctrl+[blue::ub]E[white::-] Execute"
+	ShortcutF  = "Ctrl+[blue::ub]F[white::-] Make Request"
+	ShortcutH  = "Ctrl+[blue::ub]H[white::-] Expert Mode"
+	ShortcutJ  = "Ctrl+[blue::ub]J[white::-] Select API"
+	ShortcutO  = "Ctrl+[blue::ub]O[white::-] Settings"
+	ShortcutQ  = "Ctrl+[blue::ub]Q[white::-] Exit"
+	ShortcutR  = "Ctrl+[blue::ub]R[white::-] Request Header View"
+	ShortcutDC = "Ctrl+[blue::ub]C[white::-] Copy Response"
+	ShortcutDA = "Ctrl+[blue::ub]A[white::-] Copy All (log)"
 
-	ShortcutH        = "Ctrl+[blue::ub]H[white::-] Expert Mode"
-	ShortcutHSubMenu = ShortcutH + " >> Ctrl+[blue::ub]Down[white::-] Left Menu >> Select Letter (or press down/up)"
-
-	ShortcutO        = "Ctrl+[blue::ub]O[white::-] Settings"
-	ShortcutOSubMenu = ShortcutO + " >> Ctrl+[blue::ub]Down[white::-] Left Menu >> Select Letter (or press down/up)"
-
-	ShortcutDC = "Ctrl+[blue::ub]C[white::-] Copy Result"
-	ShortcutDA = "Ctrl+[blue::ub]A[white::-] Copy All"
-
+	ShortcutHSubMenu  = ShortcutH + " >> Ctrl+[blue::ub]Down[white::-] Left Menu >> Select Letter (or press down/up)"
+	ShortcutOSubMenu  = ShortcutO + " >> Ctrl+[blue::ub]Down[white::-] Left Menu >> Select Letter (or press down/up)"
 	ShortcutSRSubMenu = " Save Request >> Ctrl+[blue::ub]Down[white::-] Left Menu >> Select Letter (or press down/up)"
 
 	ShortcutPressEscape = "Press Escape"
@@ -58,9 +55,10 @@ const (
 )
 
 // Represents data shortcuts to display to the user
+
 var (
-	MainShortcutsText        = strings.Join([]string{ShortcutJ, ShortcutE, ShortcutR, ShortcutH, ShortcutD, ShortcutO, ShortcutQ}, ShortcutSeparator)
-	ResultShortcutsText      = strings.Join([]string{ShortcutDC, ShortcutDA, ShortcutPressEscape}, ShortcutSeparator)
+	MainShortcutsText        = strings.Join([]string{ShortcutJ, ShortcutE, ShortcutF, ShortcutH, ShortcutD, ShortcutO, ShortcutQ}, ShortcutSeparator)
+	ResultShortcutsText      = strings.Join([]string{ShortcutR, ShortcutDC, ShortcutDA, ShortcutPressEscape}, ShortcutSeparator)
 	ExpertModeShortcutsText  = strings.Join([]string{ShortcutHSubMenu, ShortcutPressEscape}, ShortcutSeparator)
 	SettingsShortcutsText    = strings.Join([]string{ShortcutOSubMenu, ShortcutPressEscape}, ShortcutSeparator)
 	SaveRequestShortcutsText = strings.Join([]string{ShortcutSRSubMenu, ShortcutPressEscape}, ShortcutSeparator)

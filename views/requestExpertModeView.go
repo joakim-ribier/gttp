@@ -80,8 +80,7 @@ func (view *RequestExpertModeView) InitView() {
 	flexPrmt.AddItem(tview.NewBox().SetBorder(false), 2, 0, false)
 	flexPrmt.AddItem(pages, 0, 2, false)
 
-	frame := tview.NewFrame(flexPrmt).SetBorders(2, 2, 0, 0, 0, 0)
-	frame.SetBorder(false)
+	frame := tview.NewFrame(flexPrmt).SetBorders(0, 0, 0, 0, 0, 0)
 
 	titleAndMenuFlexPrmt.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		switch event.Name() {
@@ -401,7 +400,8 @@ func (view *RequestExpertModeView) makePreviewPage() *tview.Flex {
 
 	previewPrmt := tview.NewTextView().
 		SetDynamicColors(true).
-		SetScrollable(true)
+		SetScrollable(true).
+		ScrollTo(0, 0)
 	previewPrmt.SetBackgroundColor(utils.BackColorPrmt)
 	previewPrmt.Box.SetBorderPadding(1, 1, 1, 1)
 

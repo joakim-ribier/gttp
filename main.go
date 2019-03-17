@@ -11,16 +11,16 @@ import (
 )
 
 const logo = `
- /\/|   ____ _____ _____ ____    /\/|
-|/\/   / ___|_   _|_   _|  _ \  |/\/
-      | |  _  | |   | | | |_) |
-      | |_| | | |   | | |  __/
-	   \____| |_|   |_| |_|
-                           o   ^__^
-                            o  (oo)\_______
-                               (__)\       )\/\
-                                   ||----w |
-                                   ||     ||
+  ____           _____ _____ ____
+ / ___|         |_   _|_   _|  _ \
+| |  _   _____    | |   | | | |_) |
+| |_| | |_____|   | |   | | |  __/
+ \____|           |_|   |_| |_|
+        o   ^__^
+         o  (oo)\_______
+            (__)\       )\/\
+                ||----w |
+                ||     ||
 `
 
 func main() {
@@ -50,6 +50,7 @@ func makePrmt() tview.Primitive {
 	// Add GitHub link + shortcuts prmts
 	frame := tview.NewFrame(tview.NewBox()).
 		SetBorders(0, 0, 0, 0, 0, 0).
+		AddText("", true, tview.AlignCenter, tcell.ColorWhite).
 		AddText(utils.GitHubLink, true, tview.AlignCenter, tcell.ColorWhite).
 		AddText("", true, tview.AlignCenter, tcell.ColorWhite).
 		AddText(utils.TitleShortcuts, true, tview.AlignCenter, tcell.ColorWhite)

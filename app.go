@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	"strings"
 	"time"
 
 	"github.com/gdamore/tcell"
@@ -25,13 +24,11 @@ const (
 )
 
 var (
-	app                    *tview.Application
-	requestFormPrmt        *tview.Form
-	responseTextPrmt       *tview.TextView
-	responseHeaderTextPrmt *tview.TextView
-	messageInfoTextPrmt    *tview.TextView
-	shortcutInfoTextPrmt   *tview.TextView
-	pages                  *tview.Pages
+	app                  *tview.Application
+	requestFormPrmt      *tview.Form
+	messageInfoTextPrmt  *tview.TextView
+	shortcutInfoTextPrmt *tview.TextView
+	pages                *tview.Pages
 )
 
 var (
@@ -39,16 +36,17 @@ var (
 	event  *models.Event
 
 	appPathFileName = ""
-	bufferLog       = ""
 	responseData    = ""
 
-	makeRequestData    = models.NewMakeRequestData()
-	mapPrmtToShortcuts = make(map[tview.Primitive]string)
+	makeRequestData           = models.NewMakeRequestData()
+	mapFocusPrmtToShortutText = make(map[tview.Primitive]string)
+	focusPrmts                = []*tview.TextView{}
 
 	// List of views of the application
-	expertModeView  *views.RequestExpertModeView
-	settingsView    *views.SettingsView
-	saveRequestView *views.SaveRequestView
+	expertModeView      *views.RequestExpertModeView
+	settingsView        *views.SettingsView
+	saveRequestView     *views.SaveRequestView
+	requestResponseView *views.RequestResponseView
 
 	// List of components of the application
 	treeAPICpnt *components.TreeAPICpnt
@@ -66,10 +64,10 @@ func App() {
 	appPathFileName = os.Args[1]
 
 	initializeData := func() {
-		mapPrmtToShortcuts[responseTextPrmt] = utils.ResultShortcutsText
-		mapPrmtToShortcuts[expertModeView.TitlePrmt] = utils.ExpertModeShortcutsText
-		mapPrmtToShortcuts[settingsView.TitlePrmt] = utils.SettingsShortcutsText
-		mapPrmtToShortcuts[saveRequestView.TitlePrmt] = utils.SaveRequestShortcutsText
+		mapFocusPrmtToShortutText[requestResponseView.ResponsePrmt] = utils.ResultShortcutsText
+		mapFocusPrmtToShortutText[expertModeView.TitlePrmt] = utils.ExpertModeShortcutsText
+		mapFocusPrmtToShortutText[settingsView.TitlePrmt] = utils.SettingsShortcutsText
+		mapFocusPrmtToShortutText[saveRequestView.TitlePrmt] = utils.SaveRequestShortcutsText
 
 		json.Unmarshal([]byte(getDataFromTheDisk()), &output)
 
@@ -87,38 +85,39 @@ func App() {
 		setMessageInfoTextPrmt("Shortcut: " + event.Name() + " - " + time.Now().Format(time.RFC850))
 
 		switch event.Key() {
-		case tcell.KeyEsc:
-			focusPrimitive(messageInfoTextPrmt)
-		case tcell.KeyCtrlJ:
-			focusPrimitive(treeAPICpnt.Tree)
-		case tcell.KeyCtrlD:
-			displayRequestResponseViewPage()
-		case tcell.KeyCtrlR:
-			focusPrimitive(requestFormPrmt)
-		case tcell.KeyCtrlH:
-			displayRequestExpertModeViewPage()
-		case tcell.KeyCtrlE:
-			executeRequest()
-		case tcell.KeyCtrlO:
-			displaySettingsViewPage()
+		case tcell.KeyCtrlA:
+			if requestResponseView.ResponsePrmt.GetFocusable().HasFocus() {
+				utils.WriteToClipboard(requestResponseView.LogBuffer)
+			}
 		case tcell.KeyCtrlC:
-			if responseTextPrmt.GetFocusable().HasFocus() {
+			if requestResponseView.ResponsePrmt.GetFocusable().HasFocus() {
 				utils.WriteToClipboard(responseData)
 			}
 			if prmt := app.GetFocus(); prmt != nil {
-				input, er := app.GetFocus().(*tview.InputField)
-				if er == true {
+				if input, er := app.GetFocus().(*tview.InputField); er {
 					utils.WriteToClipboard(input.GetText())
 				}
 			}
 			// Disable "Ctrl+C" exit application default shortcut
 			return nil
-		case tcell.KeyCtrlA:
-			if responseTextPrmt.GetFocusable().HasFocus() {
-				utils.WriteToClipboard(bufferLog)
-			}
+		case tcell.KeyCtrlD:
+			displayRequestResponseViewPage(requestResponseView.ResponsePrmt)
+		case tcell.KeyCtrlE:
+			executeRequest()
+		case tcell.KeyCtrlF:
+			focusPrimitive(requestFormPrmt, nil)
+		case tcell.KeyCtrlH:
+			displayRequestExpertModeViewPage()
+		case tcell.KeyCtrlJ:
+			focusPrimitive(treeAPICpnt.Tree, nil)
+		case tcell.KeyCtrlO:
+			displaySettingsViewPage()
 		case tcell.KeyCtrlQ:
 			app.Stop()
+		case tcell.KeyCtrlR:
+			displayRequestResponseViewPage(requestResponseView.RequestPrmt)
+		case tcell.KeyEsc:
+			focusPrimitive(messageInfoTextPrmt, nil)
 		}
 		return event
 	})
@@ -136,11 +135,12 @@ func drawMainComponents(app *tview.Application) tview.Primitive {
 		SetDynamicColors(true)
 	messageInfoTextPrmt.Box.SetBackgroundColor(utils.BackColorPrmt)
 
-	shortcutInfoTextPrmt = tview.NewTextView().
+	shortcutInfoTextPrmt = tview.NewTextView()
+	shortcutInfoTextPrmt.SetBackgroundColor(utils.BackColor)
+	shortcutInfoTextPrmt.
 		SetTextAlign(tview.AlignRight).
-		SetDynamicColors(true)
-	shortcutInfoTextPrmt.Box.SetBackgroundColor(utils.BackColor)
-	shortcutInfoTextPrmt.SetText(utils.MainShortcutsText)
+		SetDynamicColors(true).
+		SetText(utils.MainShortcutsText)
 
 	grid := tview.NewGrid().
 		SetRows(1, 0, 2).
@@ -151,7 +151,7 @@ func drawMainComponents(app *tview.Application) tview.Primitive {
 		AddItem(drawRightPanel(), 1, 2, 1, 1, 0, 0, false).
 		AddItem(shortcutInfoTextPrmt, 2, 0, 1, 3, 0, 0, false)
 
-	frame := tview.NewFrame(grid).SetBorders(1, 0, 1, 0, 1, 1)
+	frame := tview.NewFrame(grid).SetBorders(0, 0, 0, 0, 0, 0)
 	frame.SetBorder(true).SetTitle(" " + utils.Subtitle + " ")
 
 	return frame
@@ -180,7 +180,9 @@ func drawRightPanel() tview.Primitive {
 	flex := tview.NewFlex().SetDirection(tview.FlexRow)
 
 	pages = tview.NewPages()
-	pages.AddPage("RequestResponseViewPage", drawResponsePanel(), true, false)
+	pages.SetBorder(false).SetBorderPadding(1, 1, 1, 0)
+
+	pages.AddPage("RequestResponseViewPage", makeRequestResponseView(), true, false)
 	pages.AddPage("RequestExpertModeViewPage", makeRequestExportModeView(), true, false)
 	pages.AddPage("SettingsViewPage", makeSettingsView(), true, true)
 	pages.AddPage("SaveRequestViewPage", makeSaveRequestView(), true, false)
@@ -191,139 +193,29 @@ func drawRightPanel() tview.Primitive {
 	return flex
 }
 
-func drawResponsePanel() tview.Primitive {
-	responseTextPrmt = tview.NewTextView().
-		SetDynamicColors(true).
-		SetScrollable(true)
-	responseTextPrmt.SetBackgroundColor(utils.BackColorPrmt)
-
-	responseHeaderTextPrmt = tview.NewTextView().
-		SetDynamicColors(true).
-		SetScrollable(true).SetWrap(true)
-	responseHeaderTextPrmt.SetBackgroundColor(utils.BackColorPrmt)
-
-	titleAndMenuFlexPrmt := utils.MakeTitlePrmt("Execute Request")
-	titleAndMenuFlexPrmt.AddItem(responseHeaderTextPrmt, 0, 1, false)
-
-	flex := tview.NewFlex()
-	flex.AddItem(titleAndMenuFlexPrmt, 0, 1, false)
-	flex.AddItem(tview.NewBox().SetBorder(false), 2, 0, false)
-	flex.AddItem(responseTextPrmt, 0, 2, false)
-
-	frame := tview.NewFrame(flex).SetBorders(2, 2, 0, 0, 0, 0)
-	frame.SetBorder(false)
-
-	return frame
-}
-
-func makeRequestExportModeView() tview.Primitive {
-	// Create the view
-	expertModeView = views.NewRequestExpertModeView(app, event)
-
-	// Build components
-	expertModeView.InitView()
-
-	return expertModeView.ParentPrmt
-}
-
-func makeSettingsView() tview.Primitive {
-	// Create the view
-	settingsView = views.NewSettingsView(app, event)
-
-	// Build components
-	settingsView.InitView()
-
-	return settingsView.ParentPrmt
-}
-
-func makeSaveRequestView() tview.Primitive {
-	// Create the view
-	saveRequestView = views.NewSaveRequestView(app, event)
-
-	// Build components
-	saveRequestView.InitView()
-
-	return saveRequestView.ParentPrmt
-}
-
-func displayRequestInfo(client *httpclient.HTTPClient, data string) {
-
-	format := func(key string, value string) string {
-		if key == "" {
-			return "[white]" + value
-		}
-		return "[blue]" + key + "[white] " + value
-	}
-
-	var sb strings.Builder
-
-	// Add request header info
-	sb.WriteString(format(client.Request.Method, client.Request.URL+" [blue]HTTP[white]/"+client.Request.HTTP))
-	sb.WriteString("\r\n")
-	for k, v := range client.HeadersRequest {
-		if k != "Content-Type" {
-			sb.WriteString(format(k, v))
-			sb.WriteString("\r\n")
-		}
-	}
-
-	sb.WriteString("\r\n")
-	sb.WriteString(format("Host", client.Request.Host))
-
-	// Add request body
-	sb.WriteString("\r\n")
-	sb.WriteString(format("Content-Type", client.HeadersRequest["Content-Type"]))
-	sb.WriteString("\r\n\r\n")
-	sb.WriteString(format("", client.Request.Body))
-
-	// Add response header info
-	sb.WriteString("\r\n\r\n")
-	sb.WriteString(format("HTTP[white]/"+client.Response.HTTP, client.Response.Status))
-	sb.WriteString("\r\n")
-	sb.WriteString(format("Content-Length", client.Response.Contentlength))
-	sb.WriteString("\r\n")
-	sb.WriteString(format("Content-Type", client.Response.ContentType))
-	sb.WriteString("\r\n")
-	sb.WriteString(format("Date", client.Response.Date))
-	sb.WriteString("\r\n")
-	sb.WriteString(format("Referrer-Policy", client.Response.Referrerpolicy))
-	sb.WriteString("\r\n")
-	sb.WriteString(format("Connection", client.Response.Connection))
-
-	responseHeaderTextPrmt.SetText(sb.String()).SetTextAlign(tview.AlignLeft)
-
-	// Log if error status
-	status := client.Response.StatusCode
-	if (status < "200") || (status > "205") {
-		logger("Status: "+client.Response.Status, "error")
-	}
-
-	setBodyTextPrmt(utils.FormatLog(data, "data"))
-}
-
-func displayRequestResponseViewPage() {
+func displayRequestResponseViewPage(focusOn *tview.TextView) {
 	pages.SwitchToPage("RequestResponseViewPage")
-	focusPrimitive(responseTextPrmt)
+	focusPrimitive(focusOn, focusOn.Box)
 }
 
 func displaySettingsViewPage() {
 	pages.SwitchToPage("SettingsViewPage")
-	focusPrimitive(settingsView.TitlePrmt)
+	focusPrimitive(settingsView.TitlePrmt, nil)
 }
 
 func displaySaveRequestViewPage() {
 	pages.SwitchToPage("SaveRequestViewPage")
-	focusPrimitive(saveRequestView.TitlePrmt)
+	focusPrimitive(saveRequestView.TitlePrmt, nil)
 }
 
 func displayRequestExpertModeViewPage() {
 	pages.SwitchToPage("RequestExpertModeViewPage")
-	focusPrimitive(expertModeView.TitlePrmt)
+	focusPrimitive(expertModeView.TitlePrmt, nil)
 }
 
 func executeRequest() {
-	displayRequestResponseViewPage()
-	bufferLog = ""
+	displayRequestResponseViewPage(requestResponseView.ResponsePrmt)
+	requestResponseView.ResetLogBuffer()
 	setMessageInfoTextPrmt("")
 
 	// Get current context to replace all variables
@@ -339,12 +231,12 @@ func executeRequest() {
 	body := []byte(makeRequestData.Body)
 	httpHeaderValues := makeRequestData.GetHTTPHeaderValues().ReplaceContext(currentContextValues)
 
-	HTTPClient, error := httpclient.Call(method, URL, contentType, body, httpHeaderValues, logger)
+	HTTPClient, error := httpclient.Call(method, URL, contentType, body, httpHeaderValues, requestResponseView.Logger)
 	if error != nil {
-		logger(fmt.Sprint(error), "error")
+		requestResponseView.Logger(fmt.Sprint(error), "error")
 	} else {
 		responseData = fmt.Sprintf("%+s", HTTPClient.Body)
-		displayRequestInfo(HTTPClient, responseData)
+		requestResponseView.Display(HTTPClient, responseData)
 	}
 }
 
@@ -417,7 +309,7 @@ func drawMakeRequestPanel() tview.Primitive {
 }
 
 func getDataFromTheDisk() []byte {
-	return utils.GetByteFromPathFileName(appPathFileName, logger)
+	return utils.GetByteFromPathFileName(appPathFileName, requestResponseView.Logger)
 }
 
 func saveCurrentRequest() {
@@ -458,25 +350,22 @@ func newTextView(text string) *tview.TextView {
 	return textView
 }
 
-func focusPrimitive(prmt tview.Primitive) {
+func focusPrimitive(prmt tview.Primitive, box *tview.Box) {
 	app.SetFocus(prmt)
-	shortcuts := mapPrmtToShortcuts[prmt]
-	if prmt == nil || shortcuts == "" {
-		shortcutInfoTextPrmt.SetText(utils.MainShortcutsText)
-	} else {
-		shortcutInfoTextPrmt.SetText(shortcuts)
-	}
-	if prmt != responseTextPrmt {
-		responseTextPrmt.SetBackgroundColor(utils.BackColorPrmt)
-	}
-}
 
-func focusTextViewWithColor(prmt tview.Primitive, BackColor tcell.Color, backFocusColor tcell.Color) {
-	focusPrimitive(prmt)
-	if app.GetFocus() == prmt {
-		prmt.(*tview.TextView).SetBackgroundColor(backFocusColor)
+	// Set border false to all focus prmt
+	for v := range focusPrmts {
+		focusPrmts[v].SetBorder(false)
+	}
+	if box != nil {
+		box.SetBorder(true)
+	}
+
+	// Display the right shortcuts text
+	if text, exists := mapFocusPrmtToShortutText[prmt]; exists {
+		shortcutInfoTextPrmt.SetText(text)
 	} else {
-		prmt.(*tview.TextView).SetBackgroundColor(BackColor)
+		shortcutInfoTextPrmt.SetText(utils.MainShortcutsText)
 	}
 }
 
@@ -484,17 +373,6 @@ func setMessageInfoTextPrmt(message string) {
 	if message != "" {
 		messageInfoTextPrmt.SetText(utils.FormatLog(message, "info"))
 	}
-}
-
-func setBodyTextPrmt(data string) {
-	responseTextPrmt.Clear()
-	responseTextPrmt.SetTextAlign(tview.AlignLeft)
-	bufferLog = bufferLog + data + "\r\n"
-	responseTextPrmt.SetText(bufferLog)
-}
-
-func logger(message string, mode string) {
-	setBodyTextPrmt(utils.FormatLog(message, mode))
 }
 
 func updateMDR(value models.MakeRequestData) {
@@ -570,3 +448,38 @@ func refreshingTreeAPICpn() {
 func getOutput() models.Output {
 	return output
 }
+
+// ## -- Make all views
+
+func makeRequestExportModeView() tview.Primitive {
+	expertModeView = views.NewRequestExpertModeView(app, event)
+	expertModeView.InitView()
+
+	return expertModeView.ParentPrmt
+}
+
+func makeSettingsView() tview.Primitive {
+	settingsView = views.NewSettingsView(app, event)
+	settingsView.InitView()
+
+	return settingsView.ParentPrmt
+}
+
+func makeSaveRequestView() tview.Primitive {
+	saveRequestView = views.NewSaveRequestView(app, event)
+	saveRequestView.InitView()
+
+	return saveRequestView.ParentPrmt
+}
+
+func makeRequestResponseView() tview.Primitive {
+	requestResponseView = views.NewRequestResponseView(app, event)
+	requestResponseView.InitView()
+
+	focusPrmts = append(focusPrmts, requestResponseView.ResponsePrmt)
+	focusPrmts = append(focusPrmts, requestResponseView.RequestPrmt)
+
+	return requestResponseView.ParentPrmt
+}
+
+// -- ##
