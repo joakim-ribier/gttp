@@ -26,7 +26,7 @@ const (
 var (
 	app                  *tview.Application
 	requestFormPrmt      *tview.Form
-	messageInfoTextPrmt  *tview.TextView
+	logEventTextPrmt     *tview.TextView
 	shortcutInfoTextPrmt *tview.TextView
 	pages                *tview.Pages
 )
@@ -82,20 +82,20 @@ func App() {
 	root := drawMainComponents(app)
 
 	app.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
-		setMessageInfoTextPrmt("Shortcut: "+event.Name()+" - "+time.Now().Format(time.RFC850), "info")
+		logEventText("Shortcut: "+event.Name()+" - "+time.Now().Format(time.RFC850), "info")
 
 		switch event.Key() {
 		case tcell.KeyCtrlA:
 			if requestResponseView.ResponsePrmt.GetFocusable().HasFocus() {
-				utils.WriteToClipboard(requestResponseView.LogBuffer)
+				utils.WriteToClipboard(requestResponseView.LogBuffer, logEventText)
 			}
 		case tcell.KeyCtrlC:
 			if requestResponseView.ResponsePrmt.GetFocusable().HasFocus() {
-				utils.WriteToClipboard(responseData)
+				utils.WriteToClipboard(responseData, logEventText)
 			}
 			if prmt := app.GetFocus(); prmt != nil {
 				if input, er := app.GetFocus().(*tview.InputField); er {
-					utils.WriteToClipboard(input.GetText())
+					utils.WriteToClipboard(input.GetText(), logEventText)
 				}
 			}
 			// Disable "Ctrl+C" exit application default shortcut
@@ -117,7 +117,7 @@ func App() {
 		case tcell.KeyCtrlR:
 			displayRequestResponseViewPage(requestResponseView.RequestPrmt)
 		case tcell.KeyEsc:
-			focusPrimitive(messageInfoTextPrmt, nil)
+			focusPrimitive(logEventTextPrmt, nil)
 		}
 		return event
 	})
@@ -130,10 +130,11 @@ func App() {
 }
 
 func drawMainComponents(app *tview.Application) tview.Primitive {
-	messageInfoTextPrmt = tview.NewTextView().
+	logEventTextPrmt = tview.NewTextView()
+	logEventTextPrmt.SetBackgroundColor(utils.BackColorPrmt)
+	logEventTextPrmt.
 		SetTextAlign(tview.AlignLeft).
 		SetDynamicColors(true)
-	messageInfoTextPrmt.Box.SetBackgroundColor(utils.BackColorPrmt)
 
 	shortcutInfoTextPrmt = tview.NewTextView()
 	shortcutInfoTextPrmt.SetBackgroundColor(utils.BackColor)
@@ -146,7 +147,7 @@ func drawMainComponents(app *tview.Application) tview.Primitive {
 		SetRows(1, 0, 2).
 		SetColumns(0, 10, -4).
 		SetBorders(false).
-		AddItem(messageInfoTextPrmt, 0, 0, 1, 3, 0, 0, false).
+		AddItem(logEventTextPrmt, 0, 0, 1, 3, 0, 0, false).
 		AddItem(drawLeftPanel(), 1, 0, 1, 2, 0, 0, false).
 		AddItem(drawRightPanel(), 1, 2, 1, 1, 0, 0, false).
 		AddItem(shortcutInfoTextPrmt, 2, 0, 1, 3, 0, 0, false)
@@ -216,7 +217,7 @@ func displayRequestExpertModeViewPage() {
 func executeRequest() {
 	displayRequestResponseViewPage(requestResponseView.ResponsePrmt)
 	requestResponseView.ResetLogBuffer()
-	setMessageInfoTextPrmt("", "info")
+	logEventText("", "info")
 
 	// Get current context to replace all variables
 	_, currentContext := utils.GetDropDownFieldForm(requestFormPrmt, requestExContextPrmtLabel).GetCurrentOption()
@@ -309,7 +310,7 @@ func drawMakeRequestPanel() tview.Primitive {
 }
 
 func getDataFromTheDisk() []byte {
-	return utils.GetByteFromPathFileName(appPathFileName, requestResponseView.Logger)
+	return utils.GetByteFromPathFileName(appPathFileName, logEventText)
 }
 
 func saveCurrentRequest() {
@@ -324,19 +325,6 @@ func saveCurrentRequest() {
 func getRequestURLPrmtText() string {
 	prmt := utils.GetInputFieldForm(requestFormPrmt, requestURLPrmtLabel)
 	return prmt.GetText()
-}
-
-func newTextView(text string) *tview.TextView {
-	textView := tview.NewTextView().
-		SetChangedFunc(func() {
-		})
-	textView.SetText(text)
-	textView.SetWrap(true)
-	textView.SetWordWrap(false)
-	textView.SetDynamicColors(true)
-	textView.SetRegions(true)
-
-	return textView
 }
 
 func focusPrimitive(prmt tview.Primitive, box *tview.Box) {
@@ -358,9 +346,9 @@ func focusPrimitive(prmt tview.Primitive, box *tview.Box) {
 	}
 }
 
-func setMessageInfoTextPrmt(message string, status string) {
+func logEventText(message string, status string) {
 	if message != "" {
-		messageInfoTextPrmt.SetText(utils.FormatLog(message, status))
+		logEventTextPrmt.SetText(utils.FormatLog(message, status))
 	}
 }
 
@@ -430,16 +418,16 @@ func getOutput() models.Output {
 
 func unmarshal() {
 	if error := json.Unmarshal([]byte(getDataFromTheDisk()), &output); error != nil {
-		setMessageInfoTextPrmt("Error to decode '"+appPathFileName+"' json data file.", "error")
+		logEventText("Error to decode '"+appPathFileName+"' json data file.", "error")
 	}
 }
 
 func marshal() {
 	if json, error := json.Marshal(output); error != nil {
-		setMessageInfoTextPrmt("Error to encode 'output' model.", "error")
+		logEventText("Error to encode 'output' model.", "error")
 	} else {
 		if error := ioutil.WriteFile(appPathFileName, json, 0644); error != nil {
-			setMessageInfoTextPrmt("Error to encode '"+appPathFileName+"' json data file.", "error")
+			logEventText("Error to encode '"+appPathFileName+"' json data file.", "error")
 		}
 	}
 }
