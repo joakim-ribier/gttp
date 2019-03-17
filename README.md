@@ -1,5 +1,7 @@
 # GTTP - Go HTTP Client for Terminal UIs
 
+[![Go Report Card](https://goreportcard.com/badge/github.com/joakim-ribier/gttp)](https://goreportcard.com/report/github.com/joakim-ribier/gttp)
+
 ## TOC
 
 * [Dependencies](#dependencies)
