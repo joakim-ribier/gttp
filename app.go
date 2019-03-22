@@ -417,8 +417,11 @@ func getOutput() models.Output {
 // ## -- Marshal & unmarshal json
 
 func unmarshal() {
-	if error := json.Unmarshal([]byte(getDataFromTheDisk()), &output); error != nil {
+	var data models.Output
+	if error := json.Unmarshal([]byte(getDataFromTheDisk()), &data); error != nil {
 		logEventText("Error to decode '"+appPathFileName+"' json data file.", "error")
+	} else {
+		output = data
 	}
 }
 
