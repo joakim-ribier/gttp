@@ -33,9 +33,9 @@ func NewMakeRequestData() MakeRequestData {
 
 func (m MakeRequestData) TreeFormat(pattern string) string {
 	if pattern == "" {
-		return m.Method.String() + " " + m.URL.String()
+		return m.Method.Label() + " " + m.URL.String()
 	}
-	value := strings.Replace(pattern, "{m}", m.Method.String(), -1)
+	value := strings.Replace(pattern, "{m}", m.Method.Label(), -1)
 	if strings.Contains(value, "{a}|{u}") {
 		if m.Alias != "" {
 			value = strings.Replace(value, "{a}|{u}", m.Alias, -1)

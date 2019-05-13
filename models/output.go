@@ -66,7 +66,7 @@ func (out Output) SortDataByProject() map[string][]MakeRequestData {
 	new := make(map[string][]MakeRequestData)
 	for _, data := range out.Data {
 		if data.ProjectName == "" {
-			new["#"] = add(data, new["#"])
+			new["."] = add(data, new["."])
 		} else {
 			new[data.ProjectName] = add(data, new[data.ProjectName])
 		}

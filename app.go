@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/gdamore/tcell"
-	"github.com/joakim-ribier/gttp/components"
+	"github.com/joakim-ribier/gttp/components/tree"
 	"github.com/joakim-ribier/gttp/httpclient"
 	"github.com/joakim-ribier/gttp/models"
 	"github.com/joakim-ribier/gttp/models/types"
@@ -49,7 +49,7 @@ var (
 	requestResponseView *views.RequestResponseView
 
 	// List of components of the application
-	treeAPICpnt *components.TreeAPICpnt
+	treeAPICpnt *components.TreeCpnt
 )
 
 // App main method
@@ -109,7 +109,7 @@ func App() {
 		case tcell.KeyCtrlH:
 			displayRequestExpertModeViewPage()
 		case tcell.KeyCtrlJ:
-			focusPrimitive(treeAPICpnt.Tree, nil)
+			focusPrimitive(treeAPICpnt.RootPrmt, nil)
 		case tcell.KeyCtrlO:
 			displaySettingsViewPage()
 		case tcell.KeyCtrlQ:
@@ -164,7 +164,7 @@ func drawLeftPanel() tview.Primitive {
 		SetText(utils.TitleAPIText)
 
 	// Add tree APIs component
-	treeAPICpnt = components.NewTreeAPICpnt(app, event)
+	treeAPICpnt = components.NewTreeCpnt(app, event)
 	tree := treeAPICpnt.Make(func(it models.MakeRequestData) {
 		refreshMDRView(it)
 	}, func(page string) {

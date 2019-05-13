@@ -4,7 +4,7 @@ import (
 	"strings"
 
 	"github.com/gdamore/tcell"
-	"github.com/joakim-ribier/gttp/components"
+	"github.com/joakim-ribier/gttp/components/tree"
 	"github.com/joakim-ribier/gttp/models"
 	"github.com/joakim-ribier/gttp/utils"
 	"github.com/rivo/tview"
@@ -188,13 +188,13 @@ func (view *SettingsView) makeManPage(mapMenuToFocusPrmt map[string]tview.Primit
 }
 
 func (view *SettingsView) makeAPITreeFormatPage(mapMenuToFocusPrmt map[string]tview.Primitive) *tview.Flex {
-	overview := func(treeAPICpnt *components.TreeAPICpnt, form *tview.Form) {
+	overview := func(treeAPICpnt *components.TreeCpnt, form *tview.Form) {
 		prmt := utils.GetInputFieldForm(form, view.Labels["patterns"])
 		treeAPICpnt.RefreshWithPattern(prmt.GetText())
 	}
 
 	// Add tree APIs component
-	treeAPICpnt := components.NewTreeAPICpnt(view.App, view.Event)
+	treeAPICpnt := components.NewTreeCpnt(view.App, view.Event)
 	tree := treeAPICpnt.Make(nil, nil)
 	tree.SetBackgroundColor(utils.BackColorPrmt)
 

@@ -1,5 +1,7 @@
 package types
 
+import "strings"
+
 // Method string type value
 type Method string
 
@@ -8,15 +10,23 @@ func (m Method) String() string {
 	return string(m)
 }
 
+// Label returns string to display
+func (m Method) Label() string {
+	str := m.String()
+	return str + strings.Repeat(" ", len("DELETE")-len(str))
+}
+
 // TreeColor returns foreground & background
 func (m Method) TreeColor() string {
 	switch m.String() {
 	case "GET":
-		return "[white:blue]"
+		return "[blue:]"
 	case "POST":
-		return "[white:green]"
+		return "[green:]"
 	case "PUT":
-		return "[white:orange]"
+		return "[orange:]"
+	case "DELETE":
+		return "[red:]"
 	default:
 		return ""
 	}

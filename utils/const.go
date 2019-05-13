@@ -10,7 +10,7 @@ import (
 // Represents App global information
 const (
 	GitHubTViewURL = "https://godoc.org/github.com/rivo/tview"
-	Title          = "GTTP"
+	Title          = "G-TTP"
 	Subtitle       = Title + " - Go HTTP Client for Terminal UIs"
 	TitleShortcuts = "Press [blue::ub]Escape[white::-] or Ctrl+[blue::ub]Q[white::-] to exit"
 	GitHubLink     = "~//github.com/joakim-ribier/gttp"
