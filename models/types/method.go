@@ -1,6 +1,10 @@
 package types
 
-import "strings"
+import (
+	"strings"
+
+	"github.com/joakim-ribier/gttp/utils"
+)
 
 // Method string type value
 type Method string
@@ -20,9 +24,9 @@ func (m Method) Label() string {
 func (m Method) TreeColor() string {
 	switch m.String() {
 	case "GET":
-		return "[blue:]"
+		return "[" + utils.BlueColorName + ":]"
 	case "POST":
-		return "[green:]"
+		return "[" + utils.GreenColorName + ":]"
 	case "PUT":
 		return "[orange:]"
 	case "DELETE":

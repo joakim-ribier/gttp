@@ -62,7 +62,7 @@ func (view *RequestExpertModeView) InitView() {
 
 	// Make pages for each menu content
 	pages := tview.NewPages()
-	pages.SetBackgroundColor(utils.BackColorPrmt)
+	pages.SetBackgroundColor(utils.BackGrayColor)
 	pages.AddPage("AddContentTypePage", view.makeAddContentTypePage(mapMenuToFocusPrmt), true, false)
 	pages.AddPage("AddHeaderPage", view.makeAddHeaderPage(mapMenuToFocusPrmt), true, false)
 	pages.AddPage("AddBodyPage", view.makeAddBodyPage(mapMenuToFocusPrmt), true, false)
@@ -122,7 +122,7 @@ func (view *RequestExpertModeView) makeMenu(pages *tview.Pages, mapMenuToFocusPr
 
 	menu.
 		SetBorderPadding(1, 1, 1, 1).
-		SetBackgroundColor(utils.BackColorPrmt)
+		SetBackgroundColor(utils.BackGrayColor)
 
 	return menu
 }
@@ -132,7 +132,7 @@ func (view *RequestExpertModeView) makeAddContentTypePage(mapMenuToFocusPrmt map
 
 	formPrmt := tview.NewForm()
 	formPrmt.SetBorder(false)
-	formPrmt.SetBackgroundColor(utils.BackColorPrmt)
+	formPrmt.SetBackgroundColor(utils.BackGrayColor)
 
 	// Add "Content-Type" field
 	formPrmt.AddDropDown(view.Labels["contentType"], contentTypeValues, 1, func(option string, index int) {
@@ -152,18 +152,18 @@ func (view *RequestExpertModeView) makeAddContentTypePage(mapMenuToFocusPrmt map
 	// Make table prmt
 	makeTablePrmt := func(values []string) *tview.Flex {
 		table := tview.NewTable().SetBorders(false)
-		table.SetBackgroundColor(utils.BackColorPrmt)
+		table.SetBackgroundColor(utils.BackGrayColor)
 
 		titlePrmt := tview.NewTextView()
 		titlePrmt.SetText(view.Labels["contentTypePreview"])
 		titlePrmt.SetTextColor(tcell.ColorGreen)
 		titlePrmt.
 			SetTextAlign(tview.AlignCenter).
-			SetBackgroundColor(utils.BackColorPrmt)
+			SetBackgroundColor(utils.BackGrayColor)
 
 		flexPrmt := tview.NewFlex().SetDirection(tview.FlexRow)
 		flexPrmt.AddItem(titlePrmt, 1, 0, false)
-		flexPrmt.AddItem(tview.NewBox().SetBackgroundColor(utils.BackColorPrmt), 1, 0, false)
+		flexPrmt.AddItem(tview.NewBox().SetBackgroundColor(utils.BackGrayColor), 1, 0, false)
 		flexPrmt.AddItem(table, 0, 1, false)
 
 		// Fill table with values
@@ -192,7 +192,7 @@ func (view *RequestExpertModeView) makeAddHeaderPage(mapMenuToFocusPrmt map[stri
 	displayPreview := func(textView *tview.TextView) {
 		var sb strings.Builder
 		for k, v := range view.Event.GetMDR().MapRequestHeaderKeyValue {
-			sb.WriteString("[blue]" + k + "[white] " + v)
+			sb.WriteString("[" + utils.BlueColorName + "]" + k + "[white] " + v)
 			sb.WriteString("\r\n\r\n")
 		}
 		textView.SetText(sb.String())
@@ -204,22 +204,22 @@ func (view *RequestExpertModeView) makeAddHeaderPage(mapMenuToFocusPrmt map[stri
 	previewTitlePrmt.SetTextColor(tcell.ColorGreen)
 	previewTitlePrmt.
 		SetTextAlign(tview.AlignCenter).
-		SetBackgroundColor(utils.BackColorPrmt)
+		SetBackgroundColor(utils.BackGrayColor)
 
 	previewPrmt := tview.NewTextView().
 		SetDynamicColors(true).
 		SetScrollable(true)
-	previewPrmt.SetBackgroundColor(utils.BackColorPrmt)
+	previewPrmt.SetBackgroundColor(utils.BackGrayColor)
 
 	previewFlexPrmt := tview.NewFlex().SetDirection(tview.FlexRow)
 	previewFlexPrmt.AddItem(previewTitlePrmt, 1, 0, false)
-	previewFlexPrmt.AddItem(tview.NewBox().SetBackgroundColor(utils.BackColorPrmt), 1, 0, false)
+	previewFlexPrmt.AddItem(tview.NewBox().SetBackgroundColor(utils.BackGrayColor), 1, 0, false)
 	previewFlexPrmt.AddItem(previewPrmt, 0, 1, false)
 
 	// Make header form
 	formPrmt := tview.NewForm()
 	formPrmt.SetBorder(false)
-	formPrmt.SetBackgroundColor(utils.BackColorPrmt)
+	formPrmt.SetBackgroundColor(utils.BackGrayColor)
 
 	selectedEventDropDown := func(key string) {
 		makeRequestData := view.Event.GetMDR()
@@ -339,21 +339,21 @@ func (view *RequestExpertModeView) makeAddBodyPage(mapMenuToFocusPrmt map[string
 	previewTitlePrmt.SetTextColor(tcell.ColorGreen)
 	previewTitlePrmt.
 		SetTextAlign(tview.AlignCenter).
-		SetBackgroundColor(utils.BackColorPrmt)
+		SetBackgroundColor(utils.BackGrayColor)
 
 	previewPrmt := tview.NewTextView().
 		SetDynamicColors(true).
 		SetScrollable(true)
-	previewPrmt.SetBackgroundColor(utils.BackColorPrmt)
+	previewPrmt.SetBackgroundColor(utils.BackGrayColor)
 
 	previewFlexPrmt := tview.NewFlex().SetDirection(tview.FlexRow)
 	previewFlexPrmt.AddItem(previewTitlePrmt, 1, 0, false)
-	previewFlexPrmt.AddItem(tview.NewBox().SetBackgroundColor(utils.BackColorPrmt), 1, 0, false)
+	previewFlexPrmt.AddItem(tview.NewBox().SetBackgroundColor(utils.BackGrayColor), 1, 0, false)
 	previewFlexPrmt.AddItem(previewPrmt, 0, 1, false)
 
 	formPrmt := tview.NewForm()
 	formPrmt.SetBorder(false)
-	formPrmt.SetBackgroundColor(utils.BackColorPrmt)
+	formPrmt.SetBackgroundColor(utils.BackGrayColor)
 
 	// Add "Body" field
 	formPrmt.AddInputField(view.Labels["body"], "", 0, nil, func(value string) {
@@ -396,13 +396,13 @@ func (view *RequestExpertModeView) makePreviewPage() *tview.Flex {
 	titlePrmt.SetTextColor(tcell.ColorGreen)
 	titlePrmt.
 		SetTextAlign(tview.AlignCenter).
-		SetBackgroundColor(utils.BackColorPrmt)
+		SetBackgroundColor(utils.BackGrayColor)
 
 	previewPrmt := tview.NewTextView().
 		SetDynamicColors(true).
 		SetScrollable(true).
 		ScrollTo(0, 0)
-	previewPrmt.SetBackgroundColor(utils.BackColorPrmt)
+	previewPrmt.SetBackgroundColor(utils.BackGrayColor)
 	previewPrmt.Box.SetBorderPadding(1, 1, 1, 1)
 
 	// Add listener to refresh primitive when the MakeRequestData is changing...
@@ -415,7 +415,7 @@ func (view *RequestExpertModeView) makePreviewPage() *tview.Flex {
 	flexPrmt := tview.NewFlex().SetDirection(tview.FlexRow)
 	flexPrmt.SetBorderPadding(1, 0, 0, 0)
 	flexPrmt.AddItem(titlePrmt, 1, 0, false)
-	flexPrmt.AddItem(tview.NewBox().SetBackgroundColor(utils.BackColorPrmt), 1, 0, false)
+	flexPrmt.AddItem(tview.NewBox().SetBackgroundColor(utils.BackGrayColor), 1, 0, false)
 	flexPrmt.AddItem(previewPrmt, 0, 1, false)
 
 	return flexPrmt
@@ -439,7 +439,7 @@ func (view *RequestExpertModeView) displayPreview(textView *tview.TextView, make
 	sb.WriteString("\r\n")
 	sb.WriteString("[yellow]" + view.Labels["headers"] + ":\r\n")
 	for k, v := range makeRequestData.MapRequestHeaderKeyValue {
-		sb.WriteString("[blue]" + k + "[white] " + v)
+		sb.WriteString("[" + utils.BlueColorName + "]" + k + "[white] " + v)
 		sb.WriteString("\r\n")
 	}
 	sb.WriteString("\r\n")

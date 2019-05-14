@@ -7,12 +7,28 @@ import (
 	"github.com/joakim-ribier/gttp/core"
 )
 
+// Represents App color list
+
+const (
+	BackColorName     = "#2B2B2B"
+	BackBlueColorName = "#214283"
+	BackGrayColorName = "#424445"
+	BlueColorName     = "dodgerblue"
+	GreenColorName    = "#629755"
+)
+
+var (
+	BackColor     = tcell.GetColor(BackColorName)
+	BackBlueColor = tcell.GetColor(BackBlueColorName)
+	BackGrayColor = tcell.GetColor(BackGrayColorName)
+)
+
 // Represents App global information
 const (
 	GitHubTViewURL = "https://godoc.org/github.com/rivo/tview"
 	Title          = "G-TTP"
 	Subtitle       = Title + " - Go HTTP Client for Terminal UIs"
-	TitleShortcuts = "Press [blue::ub]Escape[white::-] or Ctrl+[blue::ub]Q[white::-] to exit"
+	TitleShortcuts = "Press [" + BlueColorName + "::ub]Escape[white::-] or Ctrl+[" + BlueColorName + "::ub]Q[white::-] to exit"
 	GitHubLink     = "~//github.com/joakim-ribier/gttp"
 	TitleAPIText   = `
 	 ____           _____ _____ ____  
@@ -24,31 +40,22 @@ const (
 `
 )
 
-// Represents App color list
-const (
-	BackColor          = tcell.ColorDefault
-	BackColorPrmt      = tcell.ColorGray
-	BackFocusColorPrmt = tcell.ColorSilver
-	TitleBackColor     = tcell.ColorBlue
-	TitleTextColor     = tcell.ColorWhite
-)
-
 // Represents App shortcuts list
 const (
-	ShortcutD  = "Ctrl+[blue::ub]D[white::-] Response View"
-	ShortcutE  = "Ctrl+[blue::ub]E[white::-] Execute"
-	ShortcutF  = "Ctrl+[blue::ub]F[white::-] Make Request"
-	ShortcutH  = "Ctrl+[blue::ub]H[white::-] Expert Mode"
-	ShortcutJ  = "Ctrl+[blue::ub]J[white::-] Select API"
-	ShortcutO  = "Ctrl+[blue::ub]O[white::-] Settings"
-	ShortcutQ  = "Ctrl+[blue::ub]Q[white::-] Exit"
-	ShortcutR  = "Ctrl+[blue::ub]R[white::-] Request Header View"
-	ShortcutDC = "Ctrl+[blue::ub]C[white::-] Copy Response"
-	ShortcutDA = "Ctrl+[blue::ub]A[white::-] Copy All (log)"
+	ShortcutD  = "Ctrl+[" + BlueColorName + "::ub]D[white::-] Response View"
+	ShortcutE  = "Ctrl+[" + BlueColorName + "::ub]E[white::-] Execute"
+	ShortcutF  = "Ctrl+[" + BlueColorName + "::ub]F[white::-] Make Request"
+	ShortcutH  = "Ctrl+[" + BlueColorName + "::ub]H[white::-] Expert Mode"
+	ShortcutJ  = "Ctrl+[" + BlueColorName + "::ub]J[white::-] Select API"
+	ShortcutO  = "Ctrl+[" + BlueColorName + "::ub]O[white::-] Settings"
+	ShortcutQ  = "Ctrl+[" + BlueColorName + "::ub]Q[white::-] Exit"
+	ShortcutR  = "Ctrl+[" + BlueColorName + "::ub]R[white::-] Request Header View"
+	ShortcutDC = "Ctrl+[" + BlueColorName + "::ub]C[white::-] Copy Response"
+	ShortcutDA = "Ctrl+[" + BlueColorName + "::ub]A[white::-] Copy All (log)"
 
-	ShortcutHSubMenu  = ShortcutH + " >> Ctrl+[blue::ub]Down[white::-] Left Menu >> Select Letter (or press down/up)"
-	ShortcutOSubMenu  = ShortcutO + " >> Ctrl+[blue::ub]Down[white::-] Left Menu >> Select Letter (or press down/up)"
-	ShortcutSRSubMenu = " Save Request >> Ctrl+[blue::ub]Down[white::-] Left Menu >> Select Letter (or press down/up)"
+	ShortcutHSubMenu  = ShortcutH + " >> Ctrl+[" + BlueColorName + "::ub]Down[white::-] Left Menu >> Select Letter (or press down/up)"
+	ShortcutOSubMenu  = ShortcutO + " >> Ctrl+[" + BlueColorName + "::ub]Down[white::-] Left Menu >> Select Letter (or press down/up)"
+	ShortcutSRSubMenu = " Save Request >> Ctrl+[" + BlueColorName + "::ub]Down[white::-] Left Menu >> Select Letter (or press down/up)"
 
 	ShortcutPressEscape = "Press Escape"
 	ShortcutSeparator   = " | "

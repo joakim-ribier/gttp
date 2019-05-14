@@ -24,6 +24,8 @@ const logo = `
 `
 
 func main() {
+	theme()
+
 	app := tview.NewApplication()
 	app.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		if event.Key() == tcell.KeyESC {
@@ -76,4 +78,21 @@ func computeStringSize(value string) (int, int) {
 		}
 	}
 	return width, len(lines)
+}
+
+// override default tview theme
+func theme() {
+	tview.Styles = tview.Theme{
+		PrimitiveBackgroundColor:    utils.BackColor,
+		ContrastBackgroundColor:     tcell.GetColor(utils.BlueColorName),
+		MoreContrastBackgroundColor: tcell.ColorGreen,
+		BorderColor:                 tcell.ColorWhite,
+		TitleColor:                  tcell.ColorWhite,
+		GraphicsColor:               tcell.ColorWhite,
+		PrimaryTextColor:            tcell.ColorWhite,
+		SecondaryTextColor:          tcell.ColorYellow,
+		TertiaryTextColor:           tcell.GetColor(utils.GreenColorName),
+		InverseTextColor:            tcell.ColorBlue,
+		ContrastSecondaryTextColor:  tcell.ColorDarkCyan,
+	}
 }

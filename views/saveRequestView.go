@@ -43,7 +43,7 @@ func (view *SaveRequestView) InitView() {
 
 	// Pages for each menu content
 	pages := tview.NewPages()
-	pages.SetBackgroundColor(utils.BackColorPrmt)
+	pages.SetBackgroundColor(utils.BackGrayColor)
 	pages.AddPage("SaveRequestProjectAliasName", view.makeForm(mapMenuToFocusPrmt), true, false)
 
 	// Menu
@@ -88,7 +88,7 @@ func (view *SaveRequestView) makeMenu(pages *tview.Pages, mapMenuToFocusPrmt map
 
 	menu.
 		SetBorderPadding(1, 1, 1, 1).
-		SetBackgroundColor(utils.BackColorPrmt)
+		SetBackgroundColor(utils.BackGrayColor)
 
 	return menu
 }
@@ -97,7 +97,7 @@ func (view *SaveRequestView) makeForm(mapMenuToFocusPrmt map[string]tview.Primit
 	// Left side Form
 	formPrmt := tview.NewForm()
 	formPrmt.SetBorder(false)
-	formPrmt.SetBackgroundColor(utils.BackColorPrmt)
+	formPrmt.SetBackgroundColor(utils.BackGrayColor)
 
 	// New field - "Project name"
 	formPrmt.AddInputField(view.Labels["project"], "", 0, nil, nil)

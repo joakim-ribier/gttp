@@ -136,6 +136,7 @@ func (cpnt *TreeCpnt) RefreshWithPattern(pattern string) {
 			// Add 'request' new child node
 			value := data.TreeFormat(pattern)
 			childNodePrmt := tview.NewTextView().SetDynamicColors(true).SetText(value)
+
 			addSetInputCaptureCallback(childNodePrmt)
 
 			cpnt.RootPrmt.AddItem(childNodePrmt, 1, 0, true)

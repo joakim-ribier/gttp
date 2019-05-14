@@ -131,7 +131,7 @@ func App() {
 
 func drawMainComponents(app *tview.Application) tview.Primitive {
 	logEventTextPrmt = tview.NewTextView()
-	logEventTextPrmt.SetBackgroundColor(utils.BackColorPrmt)
+	logEventTextPrmt.SetBackgroundColor(utils.BackGrayColor)
 	logEventTextPrmt.
 		SetTextAlign(tview.AlignLeft).
 		SetDynamicColors(true)

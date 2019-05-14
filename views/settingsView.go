@@ -24,7 +24,7 @@ type SettingsView struct {
 // NewSettingsView returns the settings view of the app
 func NewSettingsView(app *tview.Application, ev *models.Event) *SettingsView {
 	var legendSB strings.Builder
-	legendSB.WriteString("[green]Update the display format of the API(s) tree.\r\n\r\n")
+	legendSB.WriteString("[" + utils.GreenColorName + "]Update the display format of the API(s) tree.\r\n\r\n")
 	legendSB.WriteString("Change the patterns order to update the view:\r\n\r\n")
 	legendSB.WriteString("* {m}       => method: \"GET\"\r\n")
 	legendSB.WriteString("* {url}     => url: \"http//...\"\r\n")
@@ -37,14 +37,14 @@ func NewSettingsView(app *tview.Application, ev *models.Event) *SettingsView {
 	legendSB.WriteString("Example:\r\n\r\n")
 	legendSB.WriteString(tview.Escape("{color}[::b] {m} [-:black:-] [white]{a}|{u}") + "\r\n\r\n\r\n")
 	legendSB.WriteString(tview.Escape("For more details ([::b] or [-:black:-]):") + "\r\n\r\n")
-	legendSB.WriteString("@see [blue]" + utils.GitHubTViewURL)
+	legendSB.WriteString("@see [" + utils.BlueColorName + "]" + utils.GitHubTViewURL)
 
 	var gttpPageSB strings.Builder
-	gttpPageSB.WriteString("[green]Go Rich Http Client.\r\n\r\n")
-	gttpPageSB.WriteString("@see [blue]https://github.com/joakim-ribier/gttp")
+	gttpPageSB.WriteString("[" + utils.GreenColorName + "]Go Rich Http Client.\r\n\r\n")
+	gttpPageSB.WriteString("@see [" + utils.BlueColorName + "]https://github.com/joakim-ribier/gttp")
 
 	var executePageSB strings.Builder
-	executePageSB.WriteString("[green]Execute http request.\r\n\r\n")
+	executePageSB.WriteString("[" + utils.GreenColorName + "]Execute http request.\r\n\r\n")
 
 	labels := make(map[string]string)
 	labels["title"] = "Application Settings"
@@ -85,7 +85,7 @@ func (view *SettingsView) InitView() {
 
 	// Pages for each menu content
 	pages := tview.NewPages()
-	pages.SetBackgroundColor(utils.BackColorPrmt)
+	pages.SetBackgroundColor(utils.BackGrayColor)
 	pages.AddPage("EnvPage", view.makeEnvPage(mapMenuToFocusPrmt), true, false)
 	pages.AddPage("APITreeFormatPage", view.makeAPITreeFormatPage(mapMenuToFocusPrmt), true, false)
 	pages.AddPage("ManPage", view.makeManPage(mapMenuToFocusPrmt), true, false)
@@ -140,7 +140,7 @@ func (view *SettingsView) makeMenu(pages *tview.Pages, mapMenuToFocusPrmt map[st
 
 	menu.
 		SetBorderPadding(1, 1, 1, 1).
-		SetBackgroundColor(utils.BackColorPrmt)
+		SetBackgroundColor(utils.BackGrayColor)
 
 	return menu
 }
@@ -149,19 +149,19 @@ func (view *SettingsView) makeManPage(mapMenuToFocusPrmt map[string]tview.Primit
 	makeGTTPPage := func() *tview.TextView {
 		prmt := tview.NewTextView().SetDynamicColors(true)
 		prmt.SetText(view.Labels["menu_man_gttp_page"])
-		prmt.SetBackgroundColor(utils.BackColorPrmt)
+		prmt.SetBackgroundColor(utils.BackGrayColor)
 		return prmt
 	}
 
 	makeExecuteRequestPage := func() *tview.TextView {
 		prmt := tview.NewTextView().SetDynamicColors(true)
 		prmt.SetText(view.Labels["menu_man_execute_page"])
-		prmt.SetBackgroundColor(utils.BackColorPrmt)
+		prmt.SetBackgroundColor(utils.BackGrayColor)
 		return prmt
 	}
 
 	pages := tview.NewPages()
-	pages.SetBackgroundColor(utils.BackColorPrmt)
+	pages.SetBackgroundColor(utils.BackGrayColor)
 	pages.AddPage("GTTPPage", makeGTTPPage(), true, true)
 	pages.AddPage("ExecuteRequestPage", makeExecuteRequestPage(), true, false)
 
@@ -175,7 +175,7 @@ func (view *SettingsView) makeManPage(mapMenuToFocusPrmt map[string]tview.Primit
 
 	menu.
 		SetBorderPadding(1, 1, 1, 1).
-		SetBackgroundColor(utils.BackColorPrmt)
+		SetBackgroundColor(utils.BackGrayColor)
 
 	flex := tview.NewFlex()
 	flex.SetBorderPadding(1, 1, 1, 1)
@@ -196,17 +196,17 @@ func (view *SettingsView) makeAPITreeFormatPage(mapMenuToFocusPrmt map[string]tv
 	// Add tree APIs component
 	treeAPICpnt := components.NewTreeCpnt(view.App, view.Event)
 	tree := treeAPICpnt.Make(nil, nil)
-	tree.SetBackgroundColor(utils.BackColorPrmt)
+	tree.SetBackgroundColor(utils.BackGrayColor)
 
 	// Description prmt
 	descPrmt := tview.NewTextView().SetDynamicColors(true)
 	descPrmt.SetText(view.Labels["description"])
-	descPrmt.SetBackgroundColor(utils.BackColorPrmt)
+	descPrmt.SetBackgroundColor(utils.BackGrayColor)
 
 	// Form to update pattern prmt
 	formPrmt := tview.NewForm()
 	formPrmt.SetBorder(false)
-	formPrmt.SetBackgroundColor(utils.BackColorPrmt)
+	formPrmt.SetBackgroundColor(utils.BackGrayColor)
 
 	mapMenuToFocusPrmt["menu_tree_format"] = formPrmt
 
@@ -273,12 +273,12 @@ func (view *SettingsView) makeEnvPage(mapMenuToFocusPrmt map[string]tview.Primit
 
 	// Add Overview table
 	table := tview.NewTable().SetBorders(false)
-	table.SetBackgroundColor(utils.BackColorPrmt)
+	table.SetBackgroundColor(utils.BackGrayColor)
 
 	// Form
 	formPrmt := tview.NewForm()
 	formPrmt.SetBorder(false)
-	formPrmt.SetBackgroundColor(utils.BackColorPrmt)
+	formPrmt.SetBackgroundColor(utils.BackGrayColor)
 
 	mapMenuToFocusPrmt["menu_env"] = formPrmt
 

@@ -5,6 +5,7 @@ import (
 
 	"github.com/joakim-ribier/gttp/core"
 	"github.com/joakim-ribier/gttp/models/types"
+	"github.com/joakim-ribier/gttp/utils"
 )
 
 // MakeRequestData reprensents a request structure
@@ -53,6 +54,7 @@ func (m MakeRequestData) TreeFormat(pattern string) string {
 	value = strings.Replace(value, "{color}", m.Method.TreeColor(), -1)
 	value = strings.Replace(value, "{url}", m.URL.String(), -1)
 	value = strings.Replace(value, "{u}", m.URL.Base(), -1)
+	value = strings.Replace(value, "{backColor}", utils.BackColorName, -1)
 	return value
 }
 

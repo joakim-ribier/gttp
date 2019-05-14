@@ -36,7 +36,7 @@ func MakeSeparator(color tcell.Color) *tview.Box {
 
 // MakeTitlePrmt builds a title widget
 func MakeTitlePrmt(title string) *tview.Flex {
-	titleBackColor := tcell.ColorBlue
+	titleBackColor := BackBlueColor
 	titleTextColor := tcell.ColorWhite
 
 	// Title
@@ -49,11 +49,11 @@ func MakeTitlePrmt(title string) *tview.Flex {
 		SetTextColor(titleTextColor)
 
 	flexPrmt := tview.NewFlex().SetDirection(tview.FlexRow)
-	flexPrmt.SetBackgroundColor(BackColorPrmt)
+	flexPrmt.SetBackgroundColor(BackGrayColor)
 	flexPrmt.AddItem(MakeSeparator(titleBackColor), 1, 0, false)
 	flexPrmt.AddItem(titlePrmt, 1, 0, false)
 	flexPrmt.AddItem(MakeSeparator(titleBackColor), 1, 0, false)
-	flexPrmt.AddItem(MakeSeparator(tcell.ColorBlack), 1, 0, false)
+	flexPrmt.AddItem(MakeSeparator(BackColor), 1, 0, false)
 
 	return flexPrmt
 }

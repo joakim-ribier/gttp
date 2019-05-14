@@ -47,11 +47,11 @@ func NewRequestResponseView(app *tview.Application, ev *models.Event) *RequestRe
 // InitView builds all components to display correctly the view
 func (view *RequestResponseView) InitView() {
 	view.ResponsePrmt = tview.NewTextView()
-	view.ResponsePrmt.SetBackgroundColor(utils.BackColorPrmt)
+	view.ResponsePrmt.SetBackgroundColor(utils.BackGrayColor)
 	view.ResponsePrmt.SetDynamicColors(true).SetScrollable(true)
 
 	view.RequestPrmt = tview.NewTextView()
-	view.RequestPrmt.SetBackgroundColor(utils.BackColorPrmt).SetBorderPadding(0, 0, 0, 0)
+	view.RequestPrmt.SetBackgroundColor(utils.BackGrayColor).SetBorderPadding(0, 0, 0, 0)
 	view.RequestPrmt.SetDynamicColors(true).SetScrollable(true).SetWrap(true)
 
 	view.TitlePrmt = utils.MakeTitlePrmt(view.Labels["title"])
@@ -72,11 +72,11 @@ func (view *RequestResponseView) Display(client *httpclient.HTTPClient, data str
 		if key == "" {
 			return "[white]" + value
 		}
-		return "[blue]" + key + "[white] " + value
+		return "[" + utils.BlueColorName + "]" + key + "[white] " + value
 	}
 
 	// Request header
-	sb.WriteString(format(client.Request.Method, client.Request.URL+" [blue]"+view.Labels["http"]+"[white]/"+client.Request.HTTP))
+	sb.WriteString(format(client.Request.Method, client.Request.URL+" ["+utils.BlueColorName+"]"+view.Labels["http"]+"[white]/"+client.Request.HTTP))
 	sb.WriteString("\r\n")
 	for k, v := range client.HeadersRequest {
 		if k != "Content-Type" {

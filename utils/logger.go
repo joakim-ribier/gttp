@@ -20,7 +20,7 @@ func FormatLog(message string, mode string) string {
 	case "warn":
 		value = "[yellow]" + messageEscaped
 	case "data":
-		return "[yellow]" + dateTime + " [blue]" + messageEscaped + "\r\n"
+		return "[yellow]" + dateTime + " [" + BlueColorName + "]" + messageEscaped + "\r\n"
 	default:
 		value = "[white::-]" + messageEscaped
 	}
