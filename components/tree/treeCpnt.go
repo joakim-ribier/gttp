@@ -38,6 +38,8 @@ func NewTreeCpnt(app *tview.Application, ev *models.Event) *TreeCpnt {
 // Make makes the tree (home made) component
 func (cpnt *TreeCpnt) Make(refreshMDRView func(it models.MakeRequestData), switchToPage func(page string)) *tview.Flex {
 	cpnt.RootPrmt = tview.NewFlex().SetDirection(tview.FlexRow)
+	cpnt.RootPrmt.SetBorder(false)
+	cpnt.RootPrmt.SetBorderPadding(0, 0, 0, 0)
 
 	cpnt.refreshMDRView = refreshMDRView
 	cpnt.switchToPage = switchToPage

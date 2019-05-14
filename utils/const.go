@@ -25,6 +25,7 @@ var (
 
 // Represents App global information
 const (
+	TreePrmtTitle  = "API Tree"
 	GitHubTViewURL = "https://godoc.org/github.com/rivo/tview"
 	Title          = "G-TTP"
 	Subtitle       = Title + " - Go HTTP Client for Terminal UIs"

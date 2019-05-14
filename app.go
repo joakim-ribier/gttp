@@ -159,11 +159,6 @@ func drawMainComponents(app *tview.Application) tview.Primitive {
 }
 
 func drawLeftPanel() tview.Primitive {
-	titlePrmt := tview.NewTextView().
-		SetTextColor(tcell.ColorGreen).
-		SetText(utils.TitleAPIText)
-
-	// Add tree APIs component
 	treeAPICpnt = components.NewTreeCpnt(app, event)
 	tree := treeAPICpnt.Make(func(it models.MakeRequestData) {
 		refreshMDRView(it)
@@ -171,17 +166,23 @@ func drawLeftPanel() tview.Primitive {
 		pages.SwitchToPage(page)
 	})
 
-	flex := tview.NewFlex().SetDirection(tview.FlexRow)
-	flex.AddItem(titlePrmt, 8, 0, false)
+	flex := utils.MakeTitlePrmt(utils.TreePrmtTitle)
+	flex.SetBorder(false)
+	flex.SetBorderPadding(1, 0, 1, 1)
+	flex.SetBackgroundColor(utils.BackColor)
+
 	flex.AddItem(tree, 0, 1, false)
+
 	return flex
 }
 
 func drawRightPanel() tview.Primitive {
 	flex := tview.NewFlex().SetDirection(tview.FlexRow)
+	flex.SetBorder(false)
+	flex.SetBorderPadding(1, 0, 0, 0)
 
 	pages = tview.NewPages()
-	pages.SetBorder(false).SetBorderPadding(1, 1, 1, 0)
+	pages.SetBorder(false).SetBorderPadding(0, 1, 0, 0)
 
 	pages.AddPage("RequestResponseViewPage", makeRequestResponseView(), true, false)
 	pages.AddPage("RequestExpertModeViewPage", makeRequestExportModeView(), true, false)
@@ -245,9 +246,12 @@ func drawMakeRequestPanel() tview.Primitive {
 	methodValues := utils.MethodValues
 
 	flex := tview.NewFlex()
+	flex.SetBorder(false)
+	flex.SetBorderPadding(0, 0, 0, 0)
 
 	requestFormPrmt = tview.NewForm()
 	requestFormPrmt.SetBorder(false)
+	requestFormPrmt.SetBorderPadding(0, 0, 0, 0)
 
 	setDropDownExContextDefaultValue := func() {
 		envs := getOutput().Context.GetEnvsName()
