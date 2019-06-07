@@ -40,7 +40,7 @@ var (
 	settingsView        *views.SettingsView
 	saveRequestView     *views.SaveRequestView
 	requestResponseView *views.RequestResponseView
-	makeRequestView     *views.MakeRequestView
+	requestView         *views.MakeRequestView
 
 	// List of components of the application
 	treeAPICpnt *components.TreeCpnt
@@ -54,7 +54,7 @@ func App() {
 		return
 	}
 
-	event = models.NewEvent(getMDR, updateMDR, getConfig, updateConfig, getOutput, updateContext)
+	event = models.NewEvent(getMDR, updateMDR, deleteMDR, getConfig, updateConfig, getOutput, updateContext)
 	appPathFileName = os.Args[1]
 
 	initializeData := func() {
@@ -99,7 +99,7 @@ func App() {
 		case tcell.KeyCtrlE:
 			executeRequest()
 		case tcell.KeyCtrlF:
-			focusPrimitive(makeRequestView.FormPrmt, nil)
+			focusPrimitive(requestView.FormPrmt, nil)
 		case tcell.KeyCtrlH:
 			displayRequestExpertModeViewPage()
 		case tcell.KeyCtrlJ:
@@ -183,7 +183,7 @@ func drawRightPanel() tview.Primitive {
 	pages.AddPage("SettingsViewPage", makeSettingsView(), true, true)
 	pages.AddPage("SaveRequestViewPage", makeSaveRequestView(), true, false)
 
-	flex.AddItem(drawMakeRequestPanel(), 9, 0, false)
+	flex.AddItem(makeRequestView(), 9, 0, false)
 	flex.AddItem(pages, 0, 1, false)
 
 	return flex
@@ -215,10 +215,10 @@ func executeRequest() {
 	logEventText("", "info")
 
 	// Get current context to replace all variables
-	_, currentContext := makeRequestView.GetContext()
+	_, currentContext := requestView.GetContext()
 	currentContextValues := getOutput().Context.GetAllKeyValue(currentContext)
 
-	URL := types.URL(makeRequestView.GetURL()).
+	URL := types.URL(requestView.GetURL()).
 		ReplaceContext(makeRequestData.MapRequestHeaderKeyValue).
 		ReplaceContext(currentContextValues)
 
@@ -236,33 +236,24 @@ func executeRequest() {
 	}
 }
 
-func drawMakeRequestPanel() tview.Primitive {
-	saveRequestAction := func() {
-		saveCurrentRequest()
-		refreshingTreeAPICpn()
-		refreshingConfig()
-		refreshMDRView(getMDR())
-		displaySaveRequestViewPage()
-	}
-
-	makeRequestView = views.NewMakeRequestView(app, event)
-	makeRequestView.InitView(
-		executeRequest,
-		displayRequestExpertModeViewPage,
-		saveRequestAction)
-
-	return makeRequestView.RootPrmt
-}
-
 func getDataFromTheDisk() []byte {
 	return utils.GetByteFromPathFileName(appPathFileName, logEventText)
 }
 
-func saveCurrentRequest() {
+func saveRequest(value models.MakeRequestData) {
 	// 1. Read disk data
 	unmarshal()
 	// 2. Update output
-	output.AddOrReplace(makeRequestData)
+	output.AddOrReplace(value)
+	// 3. Update disk data
+	marshal()
+}
+
+func removeRequest(value models.MakeRequestData) {
+	// 1. Read disk data
+	unmarshal()
+	// 2. Remove output
+	output.Remove(value)
 	// 3. Update disk data
 	marshal()
 }
@@ -294,6 +285,10 @@ func logEventText(message string, status string) {
 
 func updateMDR(value models.MakeRequestData) {
 	makeRequestData = value
+}
+
+func deleteMDR(value models.MakeRequestData) {
+	removeRequest(value)
 }
 
 func refreshMDRView(makeRequestData models.MakeRequestData) {
@@ -408,6 +403,33 @@ func makeRequestResponseView() tview.Primitive {
 	focusPrmts = append(focusPrmts, requestResponseView.RequestPrmt)
 
 	return requestResponseView.ParentPrmt
+}
+
+func makeRequestView() tview.Primitive {
+	saveRequestAction := func() {
+		saveRequest(getMDR())
+		refreshingTreeAPICpn()
+		refreshingConfig()
+		refreshMDRView(getMDR())
+		displaySaveRequestViewPage()
+	}
+
+	removeRequestAction := func() {
+		removeRequest(getMDR())
+		updateMDR(models.MakeRequestData{})
+		refreshingTreeAPICpn()
+		refreshingConfig()
+		refreshMDRView(getMDR())
+	}
+
+	requestView = views.NewMakeRequestView(app, event)
+	requestView.InitView(
+		executeRequest,
+		displayRequestExpertModeViewPage,
+		saveRequestAction,
+		removeRequestAction)
+
+	return requestView.RootPrmt
 }
 
 // -- ##

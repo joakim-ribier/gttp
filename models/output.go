@@ -25,6 +25,18 @@ func (out *Output) AddOrReplace(data MakeRequestData) {
 	out.Data = newData
 }
 
+// Remove removes MakeRequestData struct
+func (out *Output) Remove(data MakeRequestData) {
+	newData := []MakeRequestData{}
+	for _, value := range out.Data {
+		// URL & Method are the primary key
+		if !(value.URL == data.URL && value.Method == data.Method) {
+			newData = append(newData, value)
+		}
+	}
+	out.Data = newData
+}
+
 // Find finds a MakeRequestData from "method"/"url"
 func (out Output) Find(method string, url string) (MakeRequestData, error) {
 	var find MakeRequestData

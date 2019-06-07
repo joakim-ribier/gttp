@@ -27,6 +27,7 @@ func NewMakeRequestView(app *tview.Application, ev *models.Event) *MakeRequestVi
 	labels["execute"] = "Execute"
 	labels["save_request"] = "Save request"
 	labels["expert_mode"] = "Expert mode"
+	labels["delete_request"] = "Delete request"
 
 	return &MakeRequestView{
 		App:    app,
@@ -36,7 +37,12 @@ func NewMakeRequestView(app *tview.Application, ev *models.Event) *MakeRequestVi
 }
 
 // InitView build all components to display correctly the view
-func (view *MakeRequestView) InitView(executeRequest func(), displayExpertMode func(), saveRequest func()) {
+func (view *MakeRequestView) InitView(
+	executeRequest func(),
+	displayExpertMode func(),
+	saveRequest func(),
+	removeRequest func()) {
+
 	methodValues := utils.MethodValues
 
 	flex := tview.NewFlex()
@@ -90,6 +96,11 @@ func (view *MakeRequestView) InitView(executeRequest func(), displayExpertMode f
 	// New Field - "Save Request"
 	formPrmt.AddButton(view.Labels["save_request"], func() {
 		saveRequest()
+	})
+
+	// New Field - "Delete Request"
+	formPrmt.AddButton(view.Labels["delete_request"], func() {
+		removeRequest()
 	})
 
 	flex.AddItem(formPrmt, 0, 1, false)
