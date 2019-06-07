@@ -17,15 +17,8 @@ import (
 	"github.com/rivo/tview"
 )
 
-const (
-	requestURLPrmtLabel       = "Request URL"
-	requestMethodPrmtLabel    = "Request Method"
-	requestExContextPrmtLabel = "Execution Context"
-)
-
 var (
 	app                  *tview.Application
-	requestFormPrmt      *tview.Form
 	logEventTextPrmt     *tview.TextView
 	shortcutInfoTextPrmt *tview.TextView
 	pages                *tview.Pages
@@ -47,6 +40,7 @@ var (
 	settingsView        *views.SettingsView
 	saveRequestView     *views.SaveRequestView
 	requestResponseView *views.RequestResponseView
+	makeRequestView     *views.MakeRequestView
 
 	// List of components of the application
 	treeAPICpnt *components.TreeCpnt
@@ -105,7 +99,7 @@ func App() {
 		case tcell.KeyCtrlE:
 			executeRequest()
 		case tcell.KeyCtrlF:
-			focusPrimitive(requestFormPrmt, nil)
+			focusPrimitive(makeRequestView.FormPrmt, nil)
 		case tcell.KeyCtrlH:
 			displayRequestExpertModeViewPage()
 		case tcell.KeyCtrlJ:
@@ -221,10 +215,10 @@ func executeRequest() {
 	logEventText("", "info")
 
 	// Get current context to replace all variables
-	_, currentContext := utils.GetDropDownFieldForm(requestFormPrmt, requestExContextPrmtLabel).GetCurrentOption()
+	_, currentContext := makeRequestView.GetContext()
 	currentContextValues := getOutput().Context.GetAllKeyValue(currentContext)
 
-	URL := types.URL(getRequestURLPrmtText()).
+	URL := types.URL(makeRequestView.GetURL()).
 		ReplaceContext(makeRequestData.MapRequestHeaderKeyValue).
 		ReplaceContext(currentContextValues)
 
@@ -243,74 +237,21 @@ func executeRequest() {
 }
 
 func drawMakeRequestPanel() tview.Primitive {
-	methodValues := utils.MethodValues
-
-	flex := tview.NewFlex()
-	flex.SetBorder(false)
-	flex.SetBorderPadding(0, 0, 0, 0)
-
-	requestFormPrmt = tview.NewForm()
-	requestFormPrmt.SetBorder(false)
-	requestFormPrmt.SetBorderPadding(0, 0, 0, 0)
-
-	setDropDownExContextDefaultValue := func() {
-		envs := getOutput().Context.GetEnvsName()
-
-		prmt := utils.GetDropDownFieldForm(requestFormPrmt, requestExContextPrmtLabel)
-		prmt.SetOptions(envs, nil)
-
-		index := envs.GetIndex("default")
-		prmt.SetCurrentOption(index)
-	}
-
-	// New Field - "Ex. Context"
-	requestFormPrmt.AddDropDown(requestExContextPrmtLabel, nil, 0, nil)
-
-	// New Field - "Request Method"
-	requestFormPrmt.AddDropDown(requestMethodPrmtLabel, methodValues, 0, func(option string, index int) {
-		makeRequestData.Method = types.Method(option)
-	})
-
-	// New Field - "Request URL"
-	requestFormPrmt.AddInputField(requestURLPrmtLabel, makeRequestData.URL.String(), 0, nil, func(text string) {
-		makeRequestData.URL = types.URL(text)
-	})
-
-	// New Field - "Execute"
-	requestFormPrmt.AddButton("Execute", func() {
-		executeRequest()
-	})
-
-	// New Field - "Expert mode"
-	requestFormPrmt.AddButton("Expert mode", func() {
-		pages.SwitchToPage("RequestExpertModeViewPage")
-	})
-
-	// New Field - "Save Request"
-	requestFormPrmt.AddButton("Save request", func() {
+	saveRequestAction := func() {
 		saveCurrentRequest()
 		refreshingTreeAPICpn()
 		refreshingConfig()
 		refreshMDRView(getMDR())
 		displaySaveRequestViewPage()
-	})
-
-	utils.AddInputFieldEventForm(requestFormPrmt, requestURLPrmtLabel)
-
-	flex.AddItem(requestFormPrmt, 0, 1, false)
-
-	event.AddListenerMRD["refreshRequestPanelView"] = func(makeRequestData models.MakeRequestData) {
-		utils.GetInputFieldForm(requestFormPrmt, requestURLPrmtLabel).SetText(makeRequestData.URL.String())
-
-		methodSelectedIndex := methodValues.GetIndex(makeRequestData.Method.String())
-		utils.GetDropDownFieldForm(requestFormPrmt, requestMethodPrmtLabel).SetCurrentOption(methodSelectedIndex)
 	}
 
-	event.AddContextListener["refreshRequestPanelView"] = func(context models.Context) {
-		setDropDownExContextDefaultValue()
-	}
+	makeRequestView = views.NewMakeRequestView(app, event)
+	makeRequestView.InitView(
+		executeRequest,
+		displayRequestExpertModeViewPage,
+		saveRequestAction)
 
-	return flex
+	return makeRequestView.RootPrmt
 }
 
 func getDataFromTheDisk() []byte {
@@ -324,11 +265,6 @@ func saveCurrentRequest() {
 	output.AddOrReplace(makeRequestData)
 	// 3. Update disk data
 	marshal()
-}
-
-func getRequestURLPrmtText() string {
-	prmt := utils.GetInputFieldForm(requestFormPrmt, requestURLPrmtLabel)
-	return prmt.GetText()
 }
 
 func focusPrimitive(prmt tview.Primitive, box *tview.Box) {
