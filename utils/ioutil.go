@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 
@@ -10,6 +11,7 @@ import (
 // WriteToClipboard writes data to the clipboard (Ctrl+C for example)
 func WriteToClipboard(data string, logger func(message string, event string)) {
 	if error := clipboard.WriteAll(data); error != nil {
+		fmt.Println(error)
 		logger("Error to write data on clipboard.", "warn")
 	}
 }
