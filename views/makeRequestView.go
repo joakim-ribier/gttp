@@ -24,10 +24,11 @@ func NewMakeRequestView(app *tview.Application, ev *models.Event) *MakeRequestVi
 	labels["execution_context"] = "Execution Context"
 	labels["request_method"] = "Request Method"
 	labels["request_url"] = "Request URL"
-	labels["execute"] = "Execute"
-	labels["save_request"] = "Save request"
+	labels["execute"] = "[white::ub]E[white::-]xecute"
+	labels["save_request"] = "Save"
 	labels["expert_mode"] = "Expert mode"
-	labels["delete_request"] = "Delete request"
+	labels["delete_request"] = "Delete"
+	labels["new_request"] = "New"
 
 	return &MakeRequestView{
 		App:    app,
@@ -41,7 +42,8 @@ func (view *MakeRequestView) InitView(
 	executeRequest func(),
 	displayExpertMode func(),
 	saveRequest func(),
-	removeRequest func()) {
+	removeRequest func(),
+	newRequest func()) {
 
 	methodValues := utils.MethodValues
 
@@ -93,9 +95,20 @@ func (view *MakeRequestView) InitView(
 		displayExpertMode()
 	})
 
+	formPrmt.AddButton("", func() {
+	})
+
 	// New Field - "Save Request"
 	formPrmt.AddButton(view.Labels["save_request"], func() {
 		saveRequest()
+	})
+
+	formPrmt.AddButton("", func() {
+	})
+
+	// New Field - "New Request"
+	formPrmt.AddButton(view.Labels["new_request"], func() {
+		newRequest()
 	})
 
 	// New Field - "Delete Request"

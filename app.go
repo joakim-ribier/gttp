@@ -422,12 +422,18 @@ func makeRequestView() tview.Primitive {
 		refreshMDRView(getMDR())
 	}
 
+	newRequestAction := func() {
+		updateMDR(models.MakeRequestData{})
+		refreshMDRView(getMDR())
+	}
+
 	requestView = views.NewMakeRequestView(app, event)
 	requestView.InitView(
 		executeRequest,
 		displayRequestExpertModeViewPage,
 		saveRequestAction,
-		removeRequestAction)
+		removeRequestAction,
+		newRequestAction)
 
 	return requestView.RootPrmt
 }
