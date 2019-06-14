@@ -40,11 +40,13 @@ func NewSettingsView(app *tview.Application, ev *models.Event) *SettingsView {
 	legendSB.WriteString("@see [" + utils.BlueColorName + "]" + utils.GitHubTViewURL)
 
 	var gttpPageSB strings.Builder
-	gttpPageSB.WriteString("[" + utils.GreenColorName + "]Go Rich Http Client.\r\n\r\n")
+	gttpPageSB.WriteString("[" + utils.GreenColorName + "]Go Rich Http Client\r\n\r\n")
 	gttpPageSB.WriteString("@see [" + utils.BlueColorName + "]https://github.com/joakim-ribier/gttp")
 
 	var executePageSB strings.Builder
-	executePageSB.WriteString("[" + utils.GreenColorName + "]Execute http request.\r\n\r\n")
+	executePageSB.WriteString("[" + utils.GreenColorName + "]Execute http request\r\n\r\n")
+	executePageSB.WriteString("Choose a request (" + string(9658) + " " + utils.SelectAPIShortcut + ") and press (" + utils.ExecuteShortcut + ") to execute it.\r\n\n")
+	executePageSB.WriteString("* Select the execution context, depend on environment settings (" + utils.SettingsShortcut + ").")
 
 	labels := make(map[string]string)
 	labels["title"] = "Application Settings"

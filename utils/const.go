@@ -8,7 +8,6 @@ import (
 )
 
 // Represents App color list
-
 const (
 	BackColorName     = "#2B2B2B"
 	BackBlueColorName = "#214283"
@@ -27,48 +26,43 @@ var (
 const (
 	TreePrmtTitle  = "Requests"
 	GitHubTViewURL = "https://godoc.org/github.com/rivo/tview"
-	Title          = "G-TTP"
+	Title          = "GTTP"
 	Subtitle       = Title + " - Go HTTP Client for Terminal UIs"
 	TitleShortcuts = "Press [" + BlueColorName + "::ub]Escape[white::-] or Ctrl+[" + BlueColorName + "::ub]Q[white::-] to exit"
 	GitHubLink     = "~//github.com/joakim-ribier/gttp"
-	TitleAPIText   = `
-	 ____           _____ _____ ____  
-	/ ___|         |_   _|_   _|  _ \ 
-   | |  _   _____    | |   | | | |_) |
-   | |_| | |_____|   | |   | | |  __/ 
-	\____|           |_|   |_| |_|    
-									 
-`
 )
 
 // Represents App shortcuts list
 const (
+	JShortcut = "Ctrl+[" + BlueColorName + "::ub]J[white::-]"
+	EShortcut = "Ctrl+[" + BlueColorName + "::ub]E[white::-]"
+
+	ExecuteShortcut   = EShortcut + " Execute"
+	SelectAPIShortcut = JShortcut + " Select API"
+	SettingsShortcut  = "Ctrl+[" + BlueColorName + "::ub]O[white::-] Settings"
+
 	ShortcutD  = "Ctrl+[" + BlueColorName + "::ub]D[white::-] Response View"
-	ShortcutE  = "Ctrl+[" + BlueColorName + "::ub]E[white::-] Execute"
 	ShortcutF  = "Ctrl+[" + BlueColorName + "::ub]F[white::-] Make Request"
 	ShortcutH  = "Ctrl+[" + BlueColorName + "::ub]H[white::-] Expert Mode"
-	ShortcutJ  = "Ctrl+[" + BlueColorName + "::ub]J[white::-] Select API"
-	ShortcutO  = "Ctrl+[" + BlueColorName + "::ub]O[white::-] Settings"
 	ShortcutQ  = "Ctrl+[" + BlueColorName + "::ub]Q[white::-] Exit"
 	ShortcutR  = "Ctrl+[" + BlueColorName + "::ub]R[white::-] Request Header View"
 	ShortcutDC = "Ctrl+[" + BlueColorName + "::ub]C[white::-] Copy Response"
 	ShortcutDA = "Ctrl+[" + BlueColorName + "::ub]A[white::-] Copy All (log)"
 
-	ShortcutHSubMenu  = ShortcutH + " >> Ctrl+[" + BlueColorName + "::ub]Down[white::-] Left Menu >> Select Letter (or press down/up)"
-	ShortcutOSubMenu  = ShortcutO + " >> Ctrl+[" + BlueColorName + "::ub]Down[white::-] Left Menu >> Select Letter (or press down/up)"
-	ShortcutSRSubMenu = " Save Request >> Ctrl+[" + BlueColorName + "::ub]Down[white::-] Left Menu >> Select Letter (or press down/up)"
+	ShortcutHSubMenu        = ShortcutH + " >> Ctrl+[" + BlueColorName + "::ub]Down[white::-] Left Menu >> Select Letter (or press down/up)"
+	SettingsShortcutSubMenu = SettingsShortcut + " >> Ctrl+[" + BlueColorName + "::ub]Down[white::-] Left Menu >> Select Letter (or press down/up)"
+	ShortcutSRSubMenu       = " Save Request >> Ctrl+[" + BlueColorName + "::ub]Down[white::-] Left Menu >> Select Letter (or press down/up)"
 
 	ShortcutPressEscape = "Press Escape"
 	ShortcutSeparator   = " | "
 )
 
 // Represents data shortcuts to display to the user
-
 var (
-	MainShortcutsText        = strings.Join([]string{ShortcutJ, ShortcutE, ShortcutF, ShortcutH, ShortcutD, ShortcutO, ShortcutQ}, ShortcutSeparator)
+	MainShortcutsText        = strings.Join([]string{SelectAPIShortcut, ExecuteShortcut, ShortcutF, ShortcutH, ShortcutD, SettingsShortcut, ShortcutQ}, ShortcutSeparator)
 	ResultShortcutsText      = strings.Join([]string{ShortcutR, ShortcutDC, ShortcutDA, ShortcutPressEscape}, ShortcutSeparator)
 	ExpertModeShortcutsText  = strings.Join([]string{ShortcutHSubMenu, ShortcutPressEscape}, ShortcutSeparator)
-	SettingsShortcutsText    = strings.Join([]string{ShortcutOSubMenu, ShortcutPressEscape}, ShortcutSeparator)
+	SettingsShortcutsText    = strings.Join([]string{SettingsShortcutSubMenu, ShortcutPressEscape}, ShortcutSeparator)
 	SaveRequestShortcutsText = strings.Join([]string{ShortcutSRSubMenu, ShortcutPressEscape}, ShortcutSeparator)
 )
 
