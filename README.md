@@ -4,6 +4,8 @@
 [![GolangCI](https://golangci.com/badges/github.com/golangci/golangci-lint.svg)](https://golangci.com)
 [![Codeship Status for joakim-ribier/gttp](https://app.codeship.com/projects/99326050-2b1a-0137-1c6f-3219270c09ea/status?branch=master)](https://app.codeship.com/projects/331117)
 
+![gttp](/resources/gttp.gif)
+
 ## TOC
 
 * [Dependencies](#dependencies)
