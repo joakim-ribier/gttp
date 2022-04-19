@@ -1,7 +1,7 @@
 package components
 
 import (
-	"github.com/gdamore/tcell"
+	"github.com/gdamore/tcell/v2"
 	"github.com/joakim-ribier/gttp/models"
 	"github.com/rivo/tview"
 )

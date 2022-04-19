@@ -3,7 +3,7 @@ package views
 import (
 	"strings"
 
-	"github.com/gdamore/tcell"
+	"github.com/gdamore/tcell/v2"
 	"github.com/joakim-ribier/gttp/models"
 	"github.com/joakim-ribier/gttp/utils"
 	"github.com/rivo/tview"
@@ -225,11 +225,13 @@ func (view *RequestExpertModeView) makeAddHeaderPage(mapMenuToFocusPrmt map[stri
 		makeRequestData := view.Event.GetMDR()
 		value := makeRequestData.MapRequestHeaderKeyValue[key]
 
-		keyFieldPrmt := utils.GetInputFieldForm(formPrmt, view.Labels["key"])
-		valueFieldPrmt := utils.GetInputFieldForm(formPrmt, view.Labels["value"])
+		if item := utils.GetInputFieldForm(formPrmt, view.Labels["key"]); item != nil {
+			item.SetText(key)
+		}
 
-		keyFieldPrmt.SetText(key)
-		valueFieldPrmt.SetText(value)
+		if item := utils.GetInputFieldForm(formPrmt, view.Labels["value"]); item != nil {
+			item.SetText(value)
+		}
 	}
 
 	// Add "Headers" field

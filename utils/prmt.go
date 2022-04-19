@@ -1,7 +1,7 @@
 package utils
 
 import (
-	"github.com/gdamore/tcell"
+	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 )
 
@@ -12,7 +12,11 @@ func GetDropDownFieldForm(form *tview.Form, itemLabel string) *tview.DropDown {
 
 // GetInputFieldForm get an inputfield field by label from the form
 func GetInputFieldForm(form *tview.Form, itemLabel string) *tview.InputField {
-	return form.GetFormItemByLabel(itemLabel).(*tview.InputField)
+	if item := form.GetFormItemByLabel(itemLabel); item != nil {
+		return item.(*tview.InputField)
+	} else {
+		return nil
+	}
 }
 
 // AddInputFieldEventForm add generic event to inputfield

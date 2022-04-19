@@ -6,7 +6,7 @@ import (
 
 	"github.com/joakim-ribier/gttp/utils"
 
-	"github.com/gdamore/tcell"
+	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 )
 

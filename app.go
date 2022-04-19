@@ -7,8 +7,8 @@ import (
 	"os"
 	"time"
 
-	"github.com/gdamore/tcell"
-	"github.com/joakim-ribier/gttp/components/tree"
+	"github.com/gdamore/tcell/v2"
+	components "github.com/joakim-ribier/gttp/components/tree"
 	"github.com/joakim-ribier/gttp/httpclient"
 	"github.com/joakim-ribier/gttp/models"
 	"github.com/joakim-ribier/gttp/models/types"
@@ -80,11 +80,11 @@ func App() {
 
 		switch event.Key() {
 		case tcell.KeyCtrlA:
-			if requestResponseView.ResponsePrmt.GetFocusable().HasFocus() {
+			if requestResponseView.ResponsePrmt.HasFocus() {
 				utils.WriteToClipboard(requestResponseView.LogBuffer, logEventText)
 			}
 		case tcell.KeyCtrlC:
-			if requestResponseView.ResponsePrmt.GetFocusable().HasFocus() {
+			if requestResponseView.ResponsePrmt.HasFocus() {
 				utils.WriteToClipboard(responseData, logEventText)
 			}
 			if prmt := app.GetFocus(); prmt != nil {
