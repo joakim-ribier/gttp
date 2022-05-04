@@ -56,6 +56,8 @@ func (view *MakeRequestView) InitView(
 	formPrmt.SetBorderPadding(0, 0, 0, 0)
 
 	setDropDownExContextDefaultValue := func() {
+		view.Event.PrintOut("-> MakeRequestView.InitView{...}.setDropDownExContextDefaultValue")
+
 		envs := view.Event.GetOutput().Context.GetEnvsName()
 
 		prmt := utils.GetDropDownFieldForm(formPrmt, view.Labels["execution_context"])

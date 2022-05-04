@@ -4,7 +4,7 @@ import (
 	"strings"
 
 	"github.com/gdamore/tcell/v2"
-	"github.com/joakim-ribier/gttp/components/tree"
+	components "github.com/joakim-ribier/gttp/components/tree"
 	"github.com/joakim-ribier/gttp/models"
 	"github.com/joakim-ribier/gttp/utils"
 	"github.com/rivo/tview"
@@ -29,7 +29,6 @@ func NewSettingsView(app *tview.Application, ev *models.Event) *SettingsView {
 	legendSB.WriteString("* {m}       => method: \"GET\"\r\n")
 	legendSB.WriteString("* {url}     => url: \"http//...\"\r\n")
 	legendSB.WriteString("* {u}       => short url: \"/stats\"\r\n")
-	legendSB.WriteString("* {a}       => alias\r\n")
 	legendSB.WriteString("* {a}|{u}   => alias or short url\r\n")
 	legendSB.WriteString("* {a}|{url} => alias or url\r\n\r\n")
 	legendSB.WriteString("* {color}   => default color\r\n\r\n")
@@ -50,10 +49,14 @@ func NewSettingsView(app *tview.Application, ev *models.Event) *SettingsView {
 
 	labels := make(map[string]string)
 	labels["title"] = "Application Settings"
+
 	labels["menu_tree_format_title"] = "Change tree API(s) format"
 	labels["menu_tree_format_desc"] = "Update the display format of the API(s) tree"
+	labels["menu_tree_overview_title"] = "Example of tree formatting"
+
 	labels["menu_env_title"] = "Environment"
 	labels["menu_env_desc"] = "Add variables for specific env"
+
 	labels["menu_man_title"] = "man " + strings.ToUpper(utils.Title)
 	labels["menu_man_desc"] = "Documentation..."
 	labels["menu_man_gttp_title"] = "About " + strings.ToUpper(utils.Title)
@@ -106,14 +109,6 @@ func (view *SettingsView) InitView() {
 
 	frame := tview.NewFrame(flexPrmt).SetBorders(0, 0, 0, 0, 0, 0)
 
-	titleAndMenuFlexPrmt.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
-		switch event.Name() {
-		case "Ctrl+Down":
-			view.App.SetFocus(menu)
-		}
-		return event
-	})
-
 	// Display the "man page" menu
 	menu.SetCurrentItem(menu.GetItemCount() - 1)
 	pages.SwitchToPage("ManPage")
@@ -121,7 +116,7 @@ func (view *SettingsView) InitView() {
 	view.App.SetFocus(mapMenuToFocusPrmt["menu_man"])
 
 	// Don't forget!
-	view.TitlePrmt = titleAndMenuFlexPrmt
+	view.TitlePrmt = menu
 	view.ParentPrmt = frame
 }
 
@@ -191,14 +186,28 @@ func (view *SettingsView) makeManPage(mapMenuToFocusPrmt map[string]tview.Primit
 
 func (view *SettingsView) makeAPITreeFormatPage(mapMenuToFocusPrmt map[string]tview.Primitive) *tview.Flex {
 	overview := func(treeAPICpnt *components.TreeCpnt, form *tview.Form) {
+		view.Event.PrintOut("SettingsView.makeAPITreeFormatPage{...}.overview")
 		prmt := utils.GetInputFieldForm(form, view.Labels["patterns"])
-		treeAPICpnt.RefreshWithPattern(prmt.GetText())
+
+		values := []models.MakeRequestData{
+			models.SimpleMakeRequestData("GET", "https://api.weather.com/day/{city}", "", "Get the city weather for today (alias)"),
+			models.SimpleMakeRequestData("GET", "https://api.bank.com/balance/{account_number}", "", "Get my account balance (alias)"),
+			models.SimpleMakeRequestData("GET", "https://api.github.com/zen", "Github", "~/zen (alias)"),
+			models.SimpleMakeRequestData("POST", "https://api.github.com/new/commit", "Github", ""),
+			models.SimpleMakeRequestData("GET", "https://api.jira.com/list/ticket/{project}", "Jira", "List all tickets of project (alias)"),
+			models.SimpleMakeRequestData("PUT", "https://api.jira.com/update/ticket", "Jira", "Update a ticket (alias)"),
+			models.SimpleMakeRequestData("DELETE", "https://api.jira.com/delete/ticket", "Jira", ""),
+		}
+
+		treeAPICpnt.RefreshWithPattern(prmt.GetText(), view.Event.GetOutput().UpdateMakeRequestData(values))
 	}
 
 	// Add tree APIs component
+
 	treeAPICpnt := components.NewTreeCpnt(view.App, view.Event)
 	tree := treeAPICpnt.Make(nil, nil)
 	tree.SetBackgroundColor(utils.BackGrayColor)
+	treeAPICpnt.UpdateTitle(view.Labels["menu_tree_overview_title"])
 
 	// Description prmt
 	descPrmt := tview.NewTextView().SetDynamicColors(true)
@@ -243,6 +252,8 @@ func (view *SettingsView) makeAPITreeFormatPage(mapMenuToFocusPrmt map[string]tv
 	flex.AddItem(tree, 0, 1, false)
 
 	view.Event.AddListenerConfig["makeAPITreeFormatPage"] = func(data models.Config) {
+		view.Event.PrintOut("SettingsView.makeAPITreeFormatPage{...}.listener")
+
 		prmt := utils.GetInputFieldForm(formPrmt, view.Labels["patterns"])
 		prmt.SetText(view.Event.GetConfig().Pattern)
 
@@ -324,6 +335,8 @@ func (view *SettingsView) makeEnvPage(mapMenuToFocusPrmt map[string]tview.Primit
 	}
 
 	refreshContext := func(env string, variable string) {
+		view.Event.PrintOut("-> SettingsView.makeAPITreeFormatPage{...}.refreshContext")
+
 		envs := view.Event.GetOutput().Context.GetEnvsName()
 
 		envsDropDownPrmt := utils.GetDropDownFieldForm(formPrmt, view.Labels["envs"])

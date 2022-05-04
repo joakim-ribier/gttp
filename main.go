@@ -4,9 +4,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/joakim-ribier/gttp/utils"
-
 	"github.com/gdamore/tcell/v2"
+	"github.com/joakim-ribier/gttp/utils"
 	"github.com/rivo/tview"
 )
 

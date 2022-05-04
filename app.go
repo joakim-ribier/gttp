@@ -18,6 +18,8 @@ import (
 )
 
 var (
+	debug = true
+
 	app                  *tview.Application
 	logEventTextPrmt     *tview.TextView
 	shortcutInfoTextPrmt *tview.TextView
@@ -31,7 +33,7 @@ var (
 	appPathFileName = ""
 	responseData    = ""
 
-	makeRequestData           = models.NewMakeRequestData()
+	makeRequestData           = models.EmptyMakeRequestData()
 	mapFocusPrmtToShortutText = make(map[tview.Primitive]string)
 	focusPrmts                = []*tview.TextView{}
 
@@ -46,16 +48,47 @@ var (
 	treeAPICpnt *components.TreeCpnt
 )
 
-// App main method
-func App() {
-	if len(os.Args) != 2 {
-		fmt.Println(`Please provide a data json file {0}.`)
-		fmt.Println("\nSee https://github.com/joakim-ribier/gttp for details.")
-		return
+// GetDataFromDisk reads @filename and stores the data on @models.Output.
+func GetDataFromDisk(filename string, log func(string, string)) models.Output {
+	var value models.Output
+
+	bytes := utils.ReadFile(filename, log)
+	if error := json.Unmarshal(bytes, &value); error != nil {
+		log("Error to decode '"+filename+"' json data file.", "error")
 	}
 
-	event = models.NewEvent(getMDR, updateMDR, deleteMDR, getConfig, updateConfig, getOutput, updateContext)
-	appPathFileName = os.Args[1]
+	return value
+}
+
+// SaveDataOnDisk writes @value on the @filename file disk.
+func SaveDataOnDisk(filename string, value models.Output, log func(string, string)) {
+	if json, error := json.Marshal(value); error != nil {
+		log("Encoding 'output' model error...", "error")
+	} else {
+		if error := ioutil.WriteFile(filename, json, 0644); error != nil {
+			log("Writing data to '"+filename+"' file error...", "error")
+		}
+	}
+}
+
+func PrintOut(value string) {
+	if debug {
+		println(time.Now().Format("Jan 02 15:04:05.000") + " " + value)
+	}
+}
+
+func App() {
+
+	getFilenameFromArgs := func(args []string) string {
+		if len(args) > 1 {
+			return args[1]
+		} else {
+			return "gttp-tmp.json"
+		}
+	}
+
+	event = models.NewEvent(getMDR, updateMDR, deleteMDR, getConfig, updateConfig, getOutput, updateContext, PrintOut)
+	appPathFileName = getFilenameFromArgs(os.Args)
 
 	initializeData := func() {
 		mapFocusPrmtToShortutText[requestResponseView.ResponsePrmt] = utils.ResultShortcutsText
@@ -63,33 +96,31 @@ func App() {
 		mapFocusPrmtToShortutText[settingsView.TitlePrmt] = utils.SettingsShortcutsText
 		mapFocusPrmtToShortutText[saveRequestView.TitlePrmt] = utils.SaveRequestShortcutsText
 
-		unmarshal()
+		output = GetDataFromDisk(appPathFileName, log)
 
 		refreshingTreeAPICpn()
 		refreshingConfig()
 		refreshingContext()
-
-		displaySettingsViewPage()
 	}
 
 	app = tview.NewApplication()
 	root := drawMainComponents(app)
 
 	app.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
-		logEventText("Shortcut: "+event.Name()+" - "+time.Now().Format(time.RFC850), "info")
+		log("Shortcut: "+event.Name()+" - "+time.Now().Format(time.RFC850), "info")
 
 		switch event.Key() {
 		case tcell.KeyCtrlA:
 			if requestResponseView.ResponsePrmt.HasFocus() {
-				utils.WriteToClipboard(requestResponseView.LogBuffer, logEventText)
+				utils.WriteToClipboard(requestResponseView.LogBuffer, log)
 			}
 		case tcell.KeyCtrlC:
 			if requestResponseView.ResponsePrmt.HasFocus() {
-				utils.WriteToClipboard(responseData, logEventText)
+				utils.WriteToClipboard(responseData, log)
 			}
 			if prmt := app.GetFocus(); prmt != nil {
 				if input, er := app.GetFocus().(*tview.InputField); er {
-					utils.WriteToClipboard(input.GetText(), logEventText)
+					utils.WriteToClipboard(input.GetText(), log)
 				}
 			}
 			// Disable "Ctrl+C" exit application default shortcut
@@ -124,11 +155,112 @@ func App() {
 }
 
 func drawMainComponents(app *tview.Application) tview.Primitive {
+
+	drawLeftPanel := func() tview.Primitive {
+		treeAPICpnt = components.NewTreeCpnt(app, event)
+		tree := treeAPICpnt.Make(func(it models.MakeRequestData) {
+			refreshMDRView(it)
+		}, func(page string) {
+			pages.SwitchToPage(page)
+		})
+
+		flex := utils.MakeTitlePrmt(utils.TreePrmtTitle)
+		flex.SetBorder(false)
+		flex.SetBorderPadding(1, 0, 1, 1)
+		flex.SetBackgroundColor(utils.BackColor)
+
+		flex.AddItem(tree, 0, 1, false)
+
+		return flex
+	}
+
+	drawRightPanel := func() tview.Primitive {
+
+		makeRequestExportModeView := func() tview.Primitive {
+			expertModeView = views.NewRequestExpertModeView(app, event)
+			expertModeView.InitView()
+
+			return expertModeView.ParentPrmt
+		}
+
+		makeSettingsView := func() tview.Primitive {
+			settingsView = views.NewSettingsView(app, event)
+			settingsView.InitView()
+
+			return settingsView.ParentPrmt
+		}
+
+		makeSaveRequestView := func() tview.Primitive {
+			saveRequestView = views.NewSaveRequestView(app, event)
+			saveRequestView.InitView()
+
+			return saveRequestView.ParentPrmt
+		}
+
+		makeRequestResponseView := func() tview.Primitive {
+			requestResponseView = views.NewRequestResponseView(app, event)
+			requestResponseView.InitView()
+
+			focusPrmts = append(focusPrmts, requestResponseView.ResponsePrmt)
+			focusPrmts = append(focusPrmts, requestResponseView.RequestPrmt)
+
+			return requestResponseView.ParentPrmt
+		}
+
+		makeRequestView := func() tview.Primitive {
+			saveRequestAction := func() {
+				saveRequest(getMDR())
+				refreshingTreeAPICpn()
+				refreshingConfig()
+				refreshMDRView(getMDR())
+				displaySaveRequestViewPage()
+			}
+
+			removeRequestAction := func() {
+				removeRequest(getMDR())
+				updateMDR(models.MakeRequestData{})
+				refreshingTreeAPICpn()
+				refreshingConfig()
+				refreshMDRView(getMDR())
+			}
+
+			newRequestAction := func() {
+				updateMDR(models.MakeRequestData{})
+				refreshMDRView(getMDR())
+			}
+
+			requestView = views.NewMakeRequestView(app, event)
+			requestView.InitView(
+				executeRequest,
+				displayRequestExpertModeViewPage,
+				saveRequestAction,
+				removeRequestAction,
+				newRequestAction)
+
+			return requestView.RootPrmt
+		}
+
+		flex := tview.NewFlex().SetDirection(tview.FlexRow)
+		flex.SetBorder(false)
+		flex.SetBorderPadding(1, 0, 0, 0)
+
+		pages = tview.NewPages()
+		pages.SetBorder(false).SetBorderPadding(0, 1, 0, 0)
+
+		pages.AddPage("RequestResponseViewPage", makeRequestResponseView(), true, false)
+		pages.AddPage("RequestExpertModeViewPage", makeRequestExportModeView(), true, false)
+		pages.AddPage("SettingsViewPage", makeSettingsView(), true, true)
+		pages.AddPage("SaveRequestViewPage", makeSaveRequestView(), true, false)
+
+		flex.AddItem(makeRequestView(), 9, 0, false)
+		flex.AddItem(pages, 0, 1, false)
+
+		return flex
+	}
+
 	logEventTextPrmt = tview.NewTextView()
 	logEventTextPrmt.SetBackgroundColor(utils.BackGrayColor)
-	logEventTextPrmt.
-		SetTextAlign(tview.AlignLeft).
-		SetDynamicColors(true)
+	logEventTextPrmt.SetTextAlign(tview.AlignLeft).SetDynamicColors(true)
 
 	shortcutInfoTextPrmt = tview.NewTextView()
 	shortcutInfoTextPrmt.SetBackgroundColor(utils.BackColor)
@@ -150,43 +282,6 @@ func drawMainComponents(app *tview.Application) tview.Primitive {
 	frame.SetBorder(true).SetTitle(" " + utils.Subtitle + " ")
 
 	return frame
-}
-
-func drawLeftPanel() tview.Primitive {
-	treeAPICpnt = components.NewTreeCpnt(app, event)
-	tree := treeAPICpnt.Make(func(it models.MakeRequestData) {
-		refreshMDRView(it)
-	}, func(page string) {
-		pages.SwitchToPage(page)
-	})
-
-	flex := utils.MakeTitlePrmt(utils.TreePrmtTitle)
-	flex.SetBorder(false)
-	flex.SetBorderPadding(1, 0, 1, 1)
-	flex.SetBackgroundColor(utils.BackColor)
-
-	flex.AddItem(tree, 0, 1, false)
-
-	return flex
-}
-
-func drawRightPanel() tview.Primitive {
-	flex := tview.NewFlex().SetDirection(tview.FlexRow)
-	flex.SetBorder(false)
-	flex.SetBorderPadding(1, 0, 0, 0)
-
-	pages = tview.NewPages()
-	pages.SetBorder(false).SetBorderPadding(0, 1, 0, 0)
-
-	pages.AddPage("RequestResponseViewPage", makeRequestResponseView(), true, false)
-	pages.AddPage("RequestExpertModeViewPage", makeRequestExportModeView(), true, false)
-	pages.AddPage("SettingsViewPage", makeSettingsView(), true, true)
-	pages.AddPage("SaveRequestViewPage", makeSaveRequestView(), true, false)
-
-	flex.AddItem(makeRequestView(), 9, 0, false)
-	flex.AddItem(pages, 0, 1, false)
-
-	return flex
 }
 
 func displayRequestResponseViewPage(focusOn *tview.TextView) {
@@ -212,7 +307,7 @@ func displayRequestExpertModeViewPage() {
 func executeRequest() {
 	displayRequestResponseViewPage(requestResponseView.ResponsePrmt)
 	requestResponseView.ResetLogBuffer()
-	logEventText("", "info")
+	log("", "info")
 
 	// Get current context to replace all variables
 	_, currentContext := requestView.GetContext()
@@ -236,26 +331,22 @@ func executeRequest() {
 	}
 }
 
-func getDataFromTheDisk() []byte {
-	return utils.GetByteFromPathFileName(appPathFileName, logEventText)
-}
-
 func saveRequest(value models.MakeRequestData) {
-	// 1. Read disk data
-	unmarshal()
-	// 2. Update output
+	output = GetDataFromDisk(appPathFileName, log)
+
+	// update
 	output.AddOrReplace(value)
-	// 3. Update disk data
-	marshal()
+
+	SaveDataOnDisk(appPathFileName, output, log)
 }
 
 func removeRequest(value models.MakeRequestData) {
-	// 1. Read disk data
-	unmarshal()
-	// 2. Remove output
+	output = GetDataFromDisk(appPathFileName, log)
+
+	// update
 	output.Remove(value)
-	// 3. Update disk data
-	marshal()
+
+	SaveDataOnDisk(appPathFileName, output, log)
 }
 
 func focusPrimitive(prmt tview.Primitive, box *tview.Box) {
@@ -274,12 +365,6 @@ func focusPrimitive(prmt tview.Primitive, box *tview.Box) {
 		shortcutInfoTextPrmt.SetText(text)
 	} else {
 		shortcutInfoTextPrmt.SetText(utils.MainShortcutsText)
-	}
-}
-
-func logEventText(message string, status string) {
-	if message != "" {
-		logEventTextPrmt.SetText(utils.FormatLog(message, status))
 	}
 }
 
@@ -307,36 +392,39 @@ func getConfig() models.Config {
 }
 
 func updateConfig(value models.Config) {
-	// 1. Read disk data
-	unmarshal()
-	// 2. Update output
+	output = GetDataFromDisk(appPathFileName, log)
+
+	// update
 	output.Config = value
-	// 3. Update disk data
-	marshal()
-	// 4. Refresh views
+
+	SaveDataOnDisk(appPathFileName, output, log)
+
+	// refresh views
 	refreshingConfig()
 	refreshingTreeAPICpn()
 }
 
 func updateContext(value models.Context) {
-	// 1. Read disk data
-	unmarshal()
-	// 2. Update output
+	output = GetDataFromDisk(appPathFileName, log)
+
+	// update
 	output.Context = value
-	// 3. Update disk data
-	marshal()
-	// 4. Refresh views
+
+	SaveDataOnDisk(appPathFileName, output, log)
+
 	refreshingContext()
 }
 
 func refreshingConfig() {
-	for _, value := range event.AddListenerConfig {
+	for key, value := range event.AddListenerConfig {
+		event.PrintOut("App.refreshingConfig." + key)
 		value(output.Config)
 	}
 }
 
 func refreshingContext() {
-	for _, value := range event.AddContextListener {
+	for key, value := range event.AddContextListener {
+		event.PrintOut("App.refreshingContext." + key)
 		value(output.Context)
 	}
 }
@@ -349,93 +437,9 @@ func getOutput() models.Output {
 	return output
 }
 
-// ## -- Marshal & unmarshal json
-
-func unmarshal() {
-	var data models.Output
-	if error := json.Unmarshal([]byte(getDataFromTheDisk()), &data); error != nil {
-		logEventText("Error to decode '"+appPathFileName+"' json data file.", "error")
-	} else {
-		output = data
+// Log displays UI message to user.
+func log(message string, status string) {
+	if message != "" {
+		logEventTextPrmt.SetText(utils.FormatLog(message, status))
 	}
 }
-
-func marshal() {
-	if json, error := json.Marshal(output); error != nil {
-		logEventText("Error to encode 'output' model.", "error")
-	} else {
-		if error := ioutil.WriteFile(appPathFileName, json, 0644); error != nil {
-			logEventText("Error to encode '"+appPathFileName+"' json data file.", "error")
-		}
-	}
-}
-
-// -- ##
-
-// ## -- Make all views
-
-func makeRequestExportModeView() tview.Primitive {
-	expertModeView = views.NewRequestExpertModeView(app, event)
-	expertModeView.InitView()
-
-	return expertModeView.ParentPrmt
-}
-
-func makeSettingsView() tview.Primitive {
-	settingsView = views.NewSettingsView(app, event)
-	settingsView.InitView()
-
-	return settingsView.ParentPrmt
-}
-
-func makeSaveRequestView() tview.Primitive {
-	saveRequestView = views.NewSaveRequestView(app, event)
-	saveRequestView.InitView()
-
-	return saveRequestView.ParentPrmt
-}
-
-func makeRequestResponseView() tview.Primitive {
-	requestResponseView = views.NewRequestResponseView(app, event)
-	requestResponseView.InitView()
-
-	focusPrmts = append(focusPrmts, requestResponseView.ResponsePrmt)
-	focusPrmts = append(focusPrmts, requestResponseView.RequestPrmt)
-
-	return requestResponseView.ParentPrmt
-}
-
-func makeRequestView() tview.Primitive {
-	saveRequestAction := func() {
-		saveRequest(getMDR())
-		refreshingTreeAPICpn()
-		refreshingConfig()
-		refreshMDRView(getMDR())
-		displaySaveRequestViewPage()
-	}
-
-	removeRequestAction := func() {
-		removeRequest(getMDR())
-		updateMDR(models.MakeRequestData{})
-		refreshingTreeAPICpn()
-		refreshingConfig()
-		refreshMDRView(getMDR())
-	}
-
-	newRequestAction := func() {
-		updateMDR(models.MakeRequestData{})
-		refreshMDRView(getMDR())
-	}
-
-	requestView = views.NewMakeRequestView(app, event)
-	requestView.InitView(
-		executeRequest,
-		displayRequestExpertModeViewPage,
-		saveRequestAction,
-		removeRequestAction,
-		newRequestAction)
-
-	return requestView.RootPrmt
-}
-
-// -- ##

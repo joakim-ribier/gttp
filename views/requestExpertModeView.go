@@ -190,9 +190,12 @@ func (view *RequestExpertModeView) makeAddContentTypePage(mapMenuToFocusPrmt map
 func (view *RequestExpertModeView) makeAddHeaderPage(mapMenuToFocusPrmt map[string]tview.Primitive) *tview.Flex {
 	// Display headers preview
 	displayPreview := func(textView *tview.TextView) {
+		sortedHeaderKeys := view.Event.GetMDR().MapRequestHeaderKeyValue.ToSortedKeys()
+		header := view.Event.GetMDR().MapRequestHeaderKeyValue
+
 		var sb strings.Builder
-		for k, v := range view.Event.GetMDR().MapRequestHeaderKeyValue {
-			sb.WriteString("[" + utils.BlueColorName + "]" + k + "[white] " + v)
+		for _, key := range sortedHeaderKeys {
+			sb.WriteString("[" + utils.BlueColorName + "]" + key + "[white] " + header[key])
 			sb.WriteString("\r\n\r\n")
 		}
 		textView.SetText(sb.String())
@@ -234,6 +237,22 @@ func (view *RequestExpertModeView) makeAddHeaderPage(mapMenuToFocusPrmt map[stri
 		}
 	}
 
+	saveAndRefreshView := func(makeRequestData models.MakeRequestData) {
+		// update object
+		view.updateMDR(makeRequestData)
+
+		headerKeys := makeRequestData.MapRequestHeaderKeyValue.ToSortedKeys()
+
+		dropDrownPrmt := utils.GetDropDownFieldForm(formPrmt, view.Labels["headers"])
+		dropDrownPrmt.SetOptions(headerKeys, func(option string, index int) {
+			selectedEventDropDown(option)
+		})
+		// Very important, fill the component with values before to SetCurrentOption
+		dropDrownPrmt.SetCurrentOption(0)
+
+		displayPreview(previewPrmt)
+	}
+
 	// Add "Headers" field
 	formPrmt.AddDropDown(view.Labels["headers"], nil, 0, func(option string, index int) {
 		selectedEventDropDown(option)
@@ -251,57 +270,31 @@ func (view *RequestExpertModeView) makeAddHeaderPage(mapMenuToFocusPrmt map[stri
 	formPrmt.AddButton(view.Labels["add"], func() {
 		makeRequestData := view.Event.GetMDR()
 
-		dropDrownPrmt := utils.GetDropDownFieldForm(formPrmt, view.Labels["headers"])
-
 		keyFieldPrmt := utils.GetInputFieldForm(formPrmt, view.Labels["key"])
 		valueFieldPrmt := utils.GetInputFieldForm(formPrmt, view.Labels["value"])
 
 		key := keyFieldPrmt.GetText()
 		value := valueFieldPrmt.GetText()
 
+		// add new value
 		makeRequestData.MapRequestHeaderKeyValue[key] = value
 
-		dropDrownPrmt.AddOption(key, func() {
-			keyFieldPrmt.SetText(key)
-			valueFieldPrmt.SetText(makeRequestData.MapRequestHeaderKeyValue[key])
-		})
-		dropDrownPrmt.SetCurrentOption(len(makeRequestData.MapRequestHeaderKeyValue) - 1)
-
-		// Update request
-		view.updateMDR(makeRequestData)
-		displayPreview(previewPrmt)
+		saveAndRefreshView(makeRequestData)
 	})
 
 	// Add "Remove" button
 	formPrmt.AddButton(view.Labels["remove"], func() {
-		makeRequestData := view.Event.GetMDR()
+		utils.GetInputFieldForm(formPrmt, view.Labels["key"]).SetText("")
+		utils.GetInputFieldForm(formPrmt, view.Labels["value"]).SetText("")
 
 		dropDrownPrmt := utils.GetDropDownFieldForm(formPrmt, view.Labels["headers"])
 
-		keyFieldPrmt := utils.GetInputFieldForm(formPrmt, view.Labels["key"])
-		valueFieldPrmt := utils.GetInputFieldForm(formPrmt, view.Labels["value"])
-
-		// Delete value
+		makeRequestData := view.Event.GetMDR()
+		// delete value
 		_, value := dropDrownPrmt.GetCurrentOption()
 		delete(makeRequestData.MapRequestHeaderKeyValue, value)
 
-		// Clean primitives
-		dropDrownPrmt.SetCurrentOption(0)
-		keyFieldPrmt.SetText("")
-		valueFieldPrmt.SetText("")
-
-		// Refresh primitives with the next value
-		slice := makeRequestData.MapRequestHeaderKeyValue.ToSliceOfKeys()
-		dropDrownPrmt.SetOptions(slice, func(option string, index int) {
-			selectedEventDropDown(option)
-		})
-		if len(slice) > 0 {
-			selectedEventDropDown(slice[0])
-		}
-
-		// Update request
-		view.updateMDR(makeRequestData)
-		displayPreview(previewPrmt)
+		saveAndRefreshView(makeRequestData)
 	})
 
 	// Add listener to refresh primitive when the MakeRequestData is changing...
@@ -309,18 +302,7 @@ func (view *RequestExpertModeView) makeAddHeaderPage(mapMenuToFocusPrmt map[stri
 		utils.GetInputFieldForm(formPrmt, view.Labels["key"]).SetText("")
 		utils.GetInputFieldForm(formPrmt, view.Labels["value"]).SetText("")
 
-		slice := makeRequestData.MapRequestHeaderKeyValue.ToSliceOfKeys()
-
-		dropDrownPrmt := utils.GetDropDownFieldForm(formPrmt, view.Labels["headers"])
-		dropDrownPrmt.SetCurrentOption(0)
-		dropDrownPrmt.SetOptions(slice, func(option string, index int) {
-			selectedEventDropDown(option)
-		})
-
-		if len(slice) > 0 {
-			selectedEventDropDown(slice[0])
-		}
-		displayPreview(previewPrmt)
+		saveAndRefreshView(view.Event.GetMDR())
 	}
 
 	// Map menu with form

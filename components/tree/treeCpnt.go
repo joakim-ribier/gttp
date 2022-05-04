@@ -24,7 +24,7 @@ type TreeCpnt struct {
 // NewTreeCpnt returns a new TreeCpnt struct
 func NewTreeCpnt(app *tview.Application, ev *models.Event) *TreeCpnt {
 	labels := make(map[string]string)
-	labels["title"] = "API(s)"
+	labels["title"] = ""
 
 	return &TreeCpnt{
 		App:       app,
@@ -44,18 +44,9 @@ func (cpnt *TreeCpnt) Make(refreshMDRView func(it models.MakeRequestData), switc
 	cpnt.refreshMDRView = refreshMDRView
 	cpnt.switchToPage = switchToPage
 
-	titleTextView := tview.NewTextView().SetText(cpnt.labels["title"])
-	cpnt.RootPrmt.AddItem(titleTextView, 2, 0, false)
-
-	cpnt.RootPrmt.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
-		switch event.Key() {
-		case tcell.KeyDown:
-			cpnt.pressKeyDown()
-		case tcell.KeyUp:
-			cpnt.pressKeyUp()
-		}
-		return event
-	})
+	titleTextView := tview.NewTextView()
+	cpnt.RootPrmt.AddItem(titleTextView, 0, 0, false)
+	cpnt.UpdateTitle(cpnt.labels["title"])
 
 	return cpnt.RootPrmt
 }
@@ -68,25 +59,27 @@ func (cpnt *TreeCpnt) removeAll() {
 }
 
 func (cpnt *TreeCpnt) pressKeyDown() {
+	previousIndex := cpnt.treeIndex
 	if cpnt.treeIndex >= (len(cpnt.nodes) - 1) {
 		cpnt.treeIndex = 0
 	} else {
 		cpnt.treeIndex = cpnt.treeIndex + 1
 	}
-	cpnt.selectNode(cpnt.treeIndex)
+	cpnt.selectNode(previousIndex, cpnt.treeIndex)
 }
 
 func (cpnt *TreeCpnt) pressKeyUp() {
+	previousIndex := cpnt.treeIndex
 	if cpnt.treeIndex <= 0 {
 		cpnt.treeIndex = len(cpnt.nodes) - 1
 	} else {
 		cpnt.treeIndex = cpnt.treeIndex - 1
 	}
-	cpnt.selectNode(cpnt.treeIndex)
+	cpnt.selectNode(previousIndex, cpnt.treeIndex)
 }
 
-func (cpnt *TreeCpnt) selectNode(index int) {
-	node := cpnt.refreshNodeText(index)
+func (cpnt *TreeCpnt) selectNode(previousIndex int, index int) {
+	node := cpnt.refreshNodeText(previousIndex, index)
 	it, error := cpnt.Event.GetOutput().Find(node.method.String(), node.url.String())
 	if error == nil {
 		cpnt.refreshMDRView(it)
@@ -94,13 +87,13 @@ func (cpnt *TreeCpnt) selectNode(index int) {
 	}
 }
 
-func (cpnt *TreeCpnt) refreshNodeText(index int) TreeCpntNode {
-	// initialize all nodes
-	for _, node := range cpnt.nodes {
-		node.textView.SetText(node.label)
+func (cpnt *TreeCpnt) refreshNodeText(previousIndex int, index int) TreeCpntNode {
+	if previousIndex != -1 {
+		previousNode := cpnt.nodes[previousIndex]
+		previousNode.textView.SetText(previousNode.label)
 	}
 
-	// selected node
+	// update current code with the "> my text"
 	node := cpnt.nodes[index]
 	node.textView.SetText(string(9658) + " " + node.label)
 
@@ -108,7 +101,7 @@ func (cpnt *TreeCpnt) refreshNodeText(index int) TreeCpntNode {
 }
 
 // RefreshWithPattern refreshes the tree data with specific pattern
-func (cpnt *TreeCpnt) RefreshWithPattern(pattern string) {
+func (cpnt *TreeCpnt) RefreshWithPattern(pattern string, output models.Output) {
 	cpnt.removeAll()
 
 	addSetInputCaptureCallback := func(prmt *tview.TextView) {
@@ -124,26 +117,30 @@ func (cpnt *TreeCpnt) RefreshWithPattern(pattern string) {
 	}
 
 	index := -1
-	for key, slice := range cpnt.Event.GetOutput().SortDataByProject() {
-		// Add 'project' new node
-		parentNodeLabel := cpnt.formatParentNodeLabel(key)
+
+	sortedProjectName, dataAPIsByProjectName := output.SortDataAPIsByProjectName()
+
+	for _, projectName := range sortedProjectName {
+		// Add 'project name' new node
+		parentNodeLabel := cpnt.formatParentNodeLabel(projectName)
 		textView := tview.NewTextView().SetDynamicColors(true).SetText(parentNodeLabel)
+
 		addSetInputCaptureCallback(textView)
 
 		cpnt.RootPrmt.AddItem(textView, 1, 0, true)
 
 		index++
 		cpnt.nodes[index] = NewTreeCpntNode(textView, parentNodeLabel, "", "")
-		for _, data := range slice {
+		for _, dataAPI := range dataAPIsByProjectName[projectName] {
 			// Add 'request' new child node
-			value := data.TreeFormat(pattern)
+			value := dataAPI.TreeFormat(pattern)
 			childNodePrmt := tview.NewTextView().SetDynamicColors(true).SetText(value)
 			addSetInputCaptureCallback(childNodePrmt)
 
 			cpnt.RootPrmt.AddItem(childNodePrmt, 1, 0, true)
 
 			index++
-			cpnt.nodes[index] = NewTreeCpntNode(childNodePrmt, value, data.Method, data.URL)
+			cpnt.nodes[index] = NewTreeCpntNode(childNodePrmt, value, dataAPI.Method, dataAPI.URL)
 		}
 	}
 }
@@ -154,5 +151,17 @@ func (cpnt *TreeCpnt) formatParentNodeLabel(value string) string {
 
 // Refresh refreshes the tree data
 func (cpnt *TreeCpnt) Refresh() {
-	cpnt.RefreshWithPattern(cpnt.Event.GetConfig().Pattern)
+	cpnt.RefreshWithPattern(cpnt.Event.GetConfig().Pattern, cpnt.Event.GetOutput())
+}
+
+// UpdateTitle updates tree title
+func (cpnt *TreeCpnt) UpdateTitle(title string) {
+	item := cpnt.RootPrmt.GetItem(0)
+	item.(*tview.TextView).SetText(title)
+	if title != "" {
+		cpnt.RootPrmt.ResizeItem(item, 2, 0)
+	} else {
+		cpnt.RootPrmt.ResizeItem(item, 0, 0)
+	}
+	cpnt.labels["title"] = title
 }

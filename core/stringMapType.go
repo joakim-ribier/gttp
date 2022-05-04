@@ -1,14 +1,17 @@
 package core
 
+import "sort"
+
 // StringMap map[string]string type
 type StringMap map[string]string
 
 // ToSliceOfKeys converts map[string]string to []string withs keys
-func (sMap StringMap) ToSliceOfKeys() []string {
+func (sMap StringMap) ToSortedKeys() []string {
 	tab := []string{}
 	for key := range sMap {
 		tab = append(tab, key)
 	}
+	sort.Strings(tab)
 	return tab
 }
 

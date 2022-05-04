@@ -16,6 +16,8 @@ type Event struct {
 	GetOutput func() Output
 
 	UpdateContext func(data Context)
+
+	PrintOut func(value string)
 }
 
 // NewEvent makes a new event struct
@@ -26,7 +28,8 @@ func NewEvent(
 	getConfig func() Config,
 	updateConfig func(data Config),
 	getOutput func() Output,
-	updateContext func(data Context)) *Event {
+	updateContext func(data Context),
+	printOut func(value string)) *Event {
 
 	return &Event{
 		AddListenerMRD:     make(map[string]func(data MakeRequestData)),
@@ -39,5 +42,6 @@ func NewEvent(
 		UpdateConfig:       updateConfig,
 		GetOutput:          getOutput,
 		UpdateContext:      updateContext,
+		PrintOut:           printOut,
 	}
 }

@@ -49,40 +49,43 @@ func (out Output) Find(method string, url string) (MakeRequestData, error) {
 	return find, errors.New("'" + method + " " + url + "' value does not exist")
 }
 
-// SortDataByProject returns map of project / data sorted by project
-func (out Output) SortDataByProject() map[string][]MakeRequestData {
+// SortDataAPIsByProjectName filters data APIs by project name and sorts by them
+func (out Output) SortDataAPIsByProjectName() ([]string, map[string][]MakeRequestData) {
 
-	sorted := func(slice map[string][]MakeRequestData) map[string][]MakeRequestData {
-		// Sort by keys
+	getSortedKeys := func(values map[string][]MakeRequestData) []string {
 		var keys []string
-		for k := range slice {
+		for k := range values {
 			keys = append(keys, k)
 		}
 		sort.Strings(keys)
-
-		// Re-build map with sorted keys
-		new := make(map[string][]MakeRequestData)
-		for _, k := range keys {
-			new[k] = slice[k]
-		}
-		return new
+		return keys
 	}
 
-	add := func(newValue MakeRequestData, slice []MakeRequestData) []MakeRequestData {
-		if slice == nil {
-			return []MakeRequestData{newValue}
+	filterDataAPIsByProjectName := func(data []MakeRequestData) map[string][]MakeRequestData {
+
+		add := func(newValue MakeRequestData, slice []MakeRequestData) []MakeRequestData {
+			if slice == nil {
+				return []MakeRequestData{newValue}
+			}
+			return append([]MakeRequestData{newValue}, slice...)
 		}
-		return append([]MakeRequestData{newValue}, slice...)
+
+		mapByProjectName := make(map[string][]MakeRequestData)
+		for _, data := range data {
+			if data.ProjectName == "" {
+				mapByProjectName["."] = add(data, mapByProjectName["."])
+			} else {
+				mapByProjectName[data.ProjectName] = add(data, mapByProjectName[data.ProjectName])
+			}
+		}
+		return mapByProjectName
 	}
 
-	new := make(map[string][]MakeRequestData)
-	for _, data := range out.Data {
-		if data.ProjectName == "" {
-			new["."] = add(data, new["."])
-		} else {
-			new[data.ProjectName] = add(data, new[data.ProjectName])
-		}
-	}
+	dataAPIsByProjectName := filterDataAPIsByProjectName(out.Data)
 
-	return sorted(new)
+	return getSortedKeys(dataAPIsByProjectName), dataAPIsByProjectName
+}
+
+func (out Output) UpdateMakeRequestData(values []MakeRequestData) Output {
+	return Output{values, out.Config, out.Context}
 }

@@ -19,16 +19,39 @@ type MakeRequestData struct {
 	Alias                    string
 }
 
-// NewMakeRequestData creates new MakeRequestData struct
-func NewMakeRequestData() MakeRequestData {
+// EmptyMakeRequestData creates an empty new MakeRequestData struct
+func EmptyMakeRequestData() MakeRequestData {
+	return NewMakeRequestData("GET", "", make(core.StringMap), "", "application/json", "", "")
+}
+
+// SimpleMakeRequestData creates a simple new MakeRequestData
+func SimpleMakeRequestData(
+	method string,
+	url string,
+	projectName string,
+	alias string) MakeRequestData {
+
+	return NewMakeRequestData(method, url, make(core.StringMap), "", "application/json", projectName, alias)
+}
+
+// NewMakeRequestData creates a new MakeRequestData
+func NewMakeRequestData(
+	method string,
+	url string,
+	header core.StringMap,
+	body string,
+	contentType string,
+	projectName string,
+	alias string) MakeRequestData {
+
 	return MakeRequestData{
-		Method:                   types.Method("GET"),
-		URL:                      "",
-		MapRequestHeaderKeyValue: make(core.StringMap),
-		Body:                     "",
-		ContentType:              "application/json",
-		ProjectName:              "",
-		Alias:                    "",
+		Method:                   types.Method(method),
+		URL:                      types.URL(url),
+		MapRequestHeaderKeyValue: header,
+		Body:                     body,
+		ContentType:              contentType,
+		ProjectName:              projectName,
+		Alias:                    alias,
 	}
 }
 
