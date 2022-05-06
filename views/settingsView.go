@@ -186,7 +186,7 @@ func (view *SettingsView) makeManPage(mapMenuToFocusPrmt map[string]tview.Primit
 
 func (view *SettingsView) makeAPITreeFormatPage(mapMenuToFocusPrmt map[string]tview.Primitive) *tview.Flex {
 	overview := func(treeAPICpnt *components.TreeCpnt, form *tview.Form) {
-		view.Event.PrintOut("SettingsView.makeAPITreeFormatPage{...}.overview")
+		view.Event.PrintTrace("SettingsView.makeAPITreeFormatPage{...}.overview")
 		prmt := utils.GetInputFieldForm(form, view.Labels["patterns"])
 
 		values := []models.MakeRequestData{
@@ -252,7 +252,7 @@ func (view *SettingsView) makeAPITreeFormatPage(mapMenuToFocusPrmt map[string]tv
 	flex.AddItem(tree, 0, 1, false)
 
 	view.Event.AddListenerConfig["makeAPITreeFormatPage"] = func(data models.Config) {
-		view.Event.PrintOut("SettingsView.makeAPITreeFormatPage{...}.listener")
+		view.Event.PrintTrace("SettingsView.makeAPITreeFormatPage{...}.listener")
 
 		prmt := utils.GetInputFieldForm(formPrmt, view.Labels["patterns"])
 		prmt.SetText(view.Event.GetConfig().Pattern)
@@ -335,7 +335,7 @@ func (view *SettingsView) makeEnvPage(mapMenuToFocusPrmt map[string]tview.Primit
 	}
 
 	refreshContext := func(env string, variable string) {
-		view.Event.PrintOut("-> SettingsView.makeAPITreeFormatPage{...}.refreshContext")
+		view.Event.PrintTrace("SettingsView.makeAPITreeFormatPage{...}.refreshContext")
 
 		envs := view.Event.GetOutput().Context.GetEnvsName()
 

@@ -17,7 +17,7 @@ type Event struct {
 
 	UpdateContext func(data Context)
 
-	PrintOut func(value string)
+	printOut func(level string, value string)
 }
 
 // NewEvent makes a new event struct
@@ -29,7 +29,7 @@ func NewEvent(
 	updateConfig func(data Config),
 	getOutput func() Output,
 	updateContext func(data Context),
-	printOut func(value string)) *Event {
+	printOut func(level string, value string)) *Event {
 
 	return &Event{
 		AddListenerMRD:     make(map[string]func(data MakeRequestData)),
@@ -42,6 +42,26 @@ func NewEvent(
 		UpdateConfig:       updateConfig,
 		GetOutput:          getOutput,
 		UpdateContext:      updateContext,
-		PrintOut:           printOut,
+		printOut:           printOut,
 	}
+}
+
+// PrintInfo prints "info" log to file
+func (evt Event) PrintInfo(value string) {
+	evt.printOut("info", value)
+}
+
+// PrintError prints "error" log to file
+func (evt Event) PrintError(value string) {
+	evt.printOut("error", value)
+}
+
+// PrintDebug prints "debug" log to file
+func (evt Event) PrintDebug(value string) {
+	evt.printOut("debug", value)
+}
+
+// PrintTrace prints "trace" log to file
+func (evt Event) PrintTrace(value string) {
+	evt.printOut("trace", value)
 }

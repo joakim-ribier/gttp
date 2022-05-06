@@ -4,7 +4,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"math/rand"
 	"os"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gdamore/tcell/v2"
@@ -18,7 +21,10 @@ import (
 )
 
 var (
-	debug = true
+	logFile      *os.File
+	logOn        = os.Getenv("GTTP_LOG") == "ON"
+	logRequestOn = os.Getenv("GTTP_LOG_REQUEST") == "ON"
+	logLevels    = os.Getenv("GTTP_LOG_LEVEL")
 
 	app                  *tview.Application
 	logEventTextPrmt     *tview.TextView
@@ -71,9 +77,28 @@ func SaveDataOnDisk(filename string, value models.Output, log func(string, strin
 	}
 }
 
-func PrintOut(value string) {
-	if debug {
-		println(time.Now().Format("Jan 02 15:04:05.000") + " " + value)
+// PrintOut writes message to a log file
+func PrintOut(level string, value string) {
+	getLevel := func() string {
+		switch level {
+		case "trace":
+			return "[TRACE]"
+		case "debug":
+			return "[DEBUG]"
+		case "error":
+			return "[ERROR]"
+		case "info":
+			return "[INFO] "
+		default:
+			return ""
+		}
+	}
+
+	if logOn && strings.Contains(logLevels, level) {
+		logFile.WriteString(
+			strings.ToUpper(getLevel()) + " " +
+				time.Now().Format("Jan 02 15:04:05.000") + " " +
+				value + "\n")
 	}
 }
 
@@ -85,6 +110,13 @@ func App() {
 		} else {
 			return "gttp-tmp.json"
 		}
+	}
+
+	// log file
+	os.Remove("application.log")
+	if logOn {
+		logFile, _ = os.OpenFile("application.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0600)
+		defer logFile.Close()
 	}
 
 	event = models.NewEvent(getMDR, updateMDR, deleteMDR, getConfig, updateConfig, getOutput, updateContext, PrintOut)
@@ -322,11 +354,22 @@ func executeRequest() {
 	body := []byte(makeRequestData.Body)
 	httpHeaderValues := makeRequestData.GetHTTPHeaderValues().ReplaceContext(currentContextValues)
 
+	prefix := "[" + strconv.Itoa(rand.Intn(100)) + "] "
+
 	HTTPClient, error := httpclient.Call(method, URL, contentType, body, httpHeaderValues, requestResponseView.Logger)
 	if error != nil {
+		event.PrintInfo(prefix + makeRequestData.ToLog(URL))
+		event.PrintError(prefix + fmt.Sprint(error))
+
 		requestResponseView.Logger(fmt.Sprint(error), "error")
 	} else {
+		event.PrintInfo(prefix + makeRequestData.ToLog(URL))
+
 		responseData = fmt.Sprintf("%+s", HTTPClient.Body)
+		if os.Getenv("GTTP_LOG_REQUEST") == "ON" {
+			event.PrintInfo(prefix + responseData)
+		}
+
 		requestResponseView.Display(HTTPClient, responseData)
 	}
 }
@@ -417,14 +460,14 @@ func updateContext(value models.Context) {
 
 func refreshingConfig() {
 	for key, value := range event.AddListenerConfig {
-		event.PrintOut("App.refreshingConfig." + key)
+		event.PrintTrace("App.refreshingConfig." + key)
 		value(output.Config)
 	}
 }
 
 func refreshingContext() {
 	for key, value := range event.AddContextListener {
-		event.PrintOut("App.refreshingContext." + key)
+		event.PrintTrace("App.refreshingContext." + key)
 		value(output.Context)
 	}
 }

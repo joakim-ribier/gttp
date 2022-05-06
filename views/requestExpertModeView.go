@@ -97,7 +97,7 @@ func (view *RequestExpertModeView) InitView() {
 	view.App.SetFocus(mapMenuToFocusPrmt["menu_preview"])
 
 	// Don't forget!
-	view.TitlePrmt = titleAndMenuFlexPrmt
+	view.TitlePrmt = menu
 	view.ParentPrmt = frame
 }
 

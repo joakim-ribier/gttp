@@ -91,3 +91,12 @@ func (m MakeRequestData) GetHTTPHeaderValues() core.StringMap {
 	}
 	return new
 }
+
+// ToLog builds request to str message to be logged
+func (m MakeRequestData) ToLog(url types.URL) string {
+	var sb strings.Builder
+	sb.WriteString(string(m.Method))
+	sb.WriteString(" ")
+	sb.WriteString(string(url))
+	return sb.String()
+}

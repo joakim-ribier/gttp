@@ -56,7 +56,7 @@ func (view *MakeRequestView) InitView(
 	formPrmt.SetBorderPadding(0, 0, 0, 0)
 
 	setDropDownExContextDefaultValue := func() {
-		view.Event.PrintOut("-> MakeRequestView.InitView{...}.setDropDownExContextDefaultValue")
+		view.Event.PrintTrace("MakeRequestView.InitView{...}.setDropDownExContextDefaultValue")
 
 		envs := view.Event.GetOutput().Context.GetEnvsName()
 
@@ -72,6 +72,8 @@ func (view *MakeRequestView) InitView(
 
 	// New Field - "Request Method"
 	formPrmt.AddDropDown(view.Labels["request_method"], methodValues, 0, func(option string, index int) {
+		view.Event.PrintTrace("MakeRequestView.InitView{...}.AddDropDown@" + view.Labels["request_method"])
+
 		makeRequestData := view.Event.GetMDR()
 		makeRequestData.Method = types.Method(option)
 
@@ -80,6 +82,8 @@ func (view *MakeRequestView) InitView(
 
 	// New Field - "Request URL"
 	formPrmt.AddInputField(view.Labels["request_url"], view.Event.GetMDR().URL.String(), 0, nil, func(text string) {
+		view.Event.PrintTrace("MakeRequestView.InitView{...}.AddInputField@" + view.Labels["request_url"])
+
 		makeRequestData := view.Event.GetMDR()
 		makeRequestData.URL = types.URL(text)
 
@@ -89,11 +93,15 @@ func (view *MakeRequestView) InitView(
 
 	// New Field - "Execute"
 	formPrmt.AddButton(view.Labels["execute"], func() {
+		view.Event.PrintTrace("MakeRequestView.InitView{...}.AddButton@" + view.Labels["execute"])
+
 		executeRequest()
 	})
 
 	// New Field - "Expert mode"
 	formPrmt.AddButton(view.Labels["expert_mode"], func() {
+		view.Event.PrintTrace("MakeRequestView.InitView{...}.AddButton@" + view.Labels["expert_mode"])
+
 		displayExpertMode()
 	})
 
@@ -102,6 +110,8 @@ func (view *MakeRequestView) InitView(
 
 	// New Field - "Save Request"
 	formPrmt.AddButton(view.Labels["save_request"], func() {
+		view.Event.PrintTrace("MakeRequestView.InitView{...}.AddButton@" + view.Labels["save_request"])
+
 		saveRequest()
 	})
 
@@ -110,17 +120,23 @@ func (view *MakeRequestView) InitView(
 
 	// New Field - "New Request"
 	formPrmt.AddButton(view.Labels["new_request"], func() {
+		view.Event.PrintTrace("MakeRequestView.InitView{...}.AddButton@" + view.Labels["new_request"])
+
 		newRequest()
 	})
 
 	// New Field - "Delete Request"
 	formPrmt.AddButton(view.Labels["delete_request"], func() {
+		view.Event.PrintTrace("MakeRequestView.InitView{...}.AddButton@" + view.Labels["delete_request"])
+
 		removeRequest()
 	})
 
 	flex.AddItem(formPrmt, 0, 1, false)
 
 	view.Event.AddListenerMRD["refreshRequestPanelView"] = func(makeRequestData models.MakeRequestData) {
+		view.Event.PrintTrace("MakeRequestView.InitView{...}.AddListenerMRD")
+
 		utils.GetInputFieldForm(formPrmt, view.Labels["request_url"]).SetText(makeRequestData.URL.String())
 
 		methodSelectedIndex := methodValues.GetIndex(makeRequestData.Method.String())
@@ -128,6 +144,8 @@ func (view *MakeRequestView) InitView(
 	}
 
 	view.Event.AddContextListener["refreshRequestPanelView"] = func(context models.Context) {
+		view.Event.PrintTrace("MakeRequestView.InitView{...}.AddContextListener")
+
 		setDropDownExContextDefaultValue()
 	}
 
