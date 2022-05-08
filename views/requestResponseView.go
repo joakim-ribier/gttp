@@ -11,8 +11,8 @@ import (
 
 // RequestResponseView represents the response of the request view
 type RequestResponseView struct {
-	App   *tview.Application
-	Event *models.Event
+	App    *tview.Application
+	AppCtx *models.AppCtx
 
 	Labels    map[string]string
 	LogBuffer string
@@ -24,7 +24,7 @@ type RequestResponseView struct {
 }
 
 // NewRequestResponseView returns the view for the request response view
-func NewRequestResponseView(app *tview.Application, ev *models.Event) *RequestResponseView {
+func NewRequestResponseView(app *tview.Application, ev *models.AppCtx) *RequestResponseView {
 	labels := make(map[string]string)
 	labels["title"] = "Execute Request"
 	labels["http"] = "HTTP"
@@ -38,7 +38,7 @@ func NewRequestResponseView(app *tview.Application, ev *models.Event) *RequestRe
 
 	return &RequestResponseView{
 		App:       app,
-		Event:     ev,
+		AppCtx:    ev,
 		Labels:    labels,
 		LogBuffer: "",
 	}

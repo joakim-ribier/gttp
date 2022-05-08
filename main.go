@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/gdamore/tcell/v2"
+	myapp "github.com/joakim-ribier/gttp/app"
 	"github.com/joakim-ribier/gttp/utils"
 	"github.com/rivo/tview"
 )
@@ -29,7 +30,7 @@ func main() {
 	app.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		if event.Key() == tcell.KeyESC {
 			app.Stop()
-			App()
+			myapp.App()
 		}
 		if event.Key() == tcell.KeyCtrlQ {
 			app.Stop()

@@ -8,8 +8,8 @@ import (
 
 // TreeCpnt represents the tree primitive which list the API(s)
 type TreeCpnt struct {
-	App   *tview.Application
-	Event *models.Event
+	App    *tview.Application
+	AppCtx *models.AppCtx
 
 	labels map[string]string
 
@@ -22,13 +22,13 @@ type TreeCpnt struct {
 }
 
 // NewTreeCpnt returns a new TreeCpnt struct
-func NewTreeCpnt(app *tview.Application, ev *models.Event) *TreeCpnt {
+func NewTreeCpnt(app *tview.Application, ctx *models.AppCtx) *TreeCpnt {
 	labels := make(map[string]string)
 	labels["title"] = ""
 
 	return &TreeCpnt{
 		App:       app,
-		Event:     ev,
+		AppCtx:    ctx,
 		labels:    labels,
 		treeIndex: -1,
 		nodes:     make(map[int]TreeCpntNode),
@@ -80,7 +80,7 @@ func (cpnt *TreeCpnt) pressKeyUp() {
 
 func (cpnt *TreeCpnt) selectNode(previousIndex int, index int) {
 	node := cpnt.refreshNodeText(previousIndex, index)
-	it, error := cpnt.Event.GetOutput().Find(node.method.String(), node.url.String())
+	it, error := cpnt.AppCtx.GetOutput().Find(node.method.String(), node.url.String())
 	if error == nil {
 		cpnt.refreshMDRView(it)
 		cpnt.switchToPage("RequestExpertModeViewPage")
@@ -134,6 +134,7 @@ func (cpnt *TreeCpnt) RefreshWithPattern(pattern string, output models.Output) {
 		for _, dataAPI := range dataAPIsByProjectName[projectName] {
 			// Add 'request' new child node
 			value := dataAPI.TreeFormat(pattern)
+
 			childNodePrmt := tview.NewTextView().SetDynamicColors(true).SetText(value)
 			addSetInputCaptureCallback(childNodePrmt)
 
@@ -151,7 +152,9 @@ func (cpnt *TreeCpnt) formatParentNodeLabel(value string) string {
 
 // Refresh refreshes the tree data
 func (cpnt *TreeCpnt) Refresh() {
-	cpnt.RefreshWithPattern(cpnt.Event.GetConfig().Pattern, cpnt.Event.GetOutput())
+	cpnt.RefreshWithPattern(
+		cpnt.AppCtx.GetConfig().Pattern,
+		cpnt.AppCtx.GetOutput())
 }
 
 // UpdateTitle updates tree title

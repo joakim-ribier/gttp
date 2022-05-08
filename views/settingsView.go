@@ -4,7 +4,7 @@ import (
 	"strings"
 
 	"github.com/gdamore/tcell/v2"
-	components "github.com/joakim-ribier/gttp/components/tree"
+	"github.com/joakim-ribier/gttp/components"
 	"github.com/joakim-ribier/gttp/models"
 	"github.com/joakim-ribier/gttp/utils"
 	"github.com/rivo/tview"
@@ -12,8 +12,8 @@ import (
 
 // SettingsView represents the application settings view
 type SettingsView struct {
-	App   *tview.Application
-	Event *models.Event
+	App    *tview.Application
+	AppCtx *models.AppCtx
 
 	Labels map[string]string
 
@@ -22,7 +22,7 @@ type SettingsView struct {
 }
 
 // NewSettingsView returns the settings view of the app
-func NewSettingsView(app *tview.Application, ev *models.Event) *SettingsView {
+func NewSettingsView(app *tview.Application, ev *models.AppCtx) *SettingsView {
 	var legendSB strings.Builder
 	legendSB.WriteString("[" + utils.GreenColorName + "]Update the display format of the API(s) tree.\r\n\r\n")
 	legendSB.WriteString("Change the patterns order to update the view:\r\n\r\n")
@@ -79,7 +79,7 @@ func NewSettingsView(app *tview.Application, ev *models.Event) *SettingsView {
 
 	return &SettingsView{
 		App:    app,
-		Event:  ev,
+		AppCtx: ev,
 		Labels: labels,
 	}
 }
@@ -186,7 +186,7 @@ func (view *SettingsView) makeManPage(mapMenuToFocusPrmt map[string]tview.Primit
 
 func (view *SettingsView) makeAPITreeFormatPage(mapMenuToFocusPrmt map[string]tview.Primitive) *tview.Flex {
 	overview := func(treeAPICpnt *components.TreeCpnt, form *tview.Form) {
-		view.Event.PrintTrace("SettingsView.makeAPITreeFormatPage{...}.overview")
+		view.AppCtx.PrintTrace("SettingsView.makeAPITreeFormatPage{...}.overview")
 		prmt := utils.GetInputFieldForm(form, view.Labels["patterns"])
 
 		values := []models.MakeRequestData{
@@ -199,12 +199,12 @@ func (view *SettingsView) makeAPITreeFormatPage(mapMenuToFocusPrmt map[string]tv
 			models.SimpleMakeRequestData("DELETE", "https://api.jira.com/delete/ticket", "Jira", ""),
 		}
 
-		treeAPICpnt.RefreshWithPattern(prmt.GetText(), view.Event.GetOutput().UpdateMakeRequestData(values))
+		treeAPICpnt.RefreshWithPattern(prmt.GetText(), view.AppCtx.GetOutput().UpdateMakeRequestData(values))
 	}
 
 	// Add tree APIs component
 
-	treeAPICpnt := components.NewTreeCpnt(view.App, view.Event)
+	treeAPICpnt := components.NewTreeCpnt(view.App, view.AppCtx)
 	tree := treeAPICpnt.Make(nil, nil)
 	tree.SetBackgroundColor(utils.BackGrayColor)
 	treeAPICpnt.UpdateTitle(view.Labels["menu_tree_overview_title"])
@@ -236,10 +236,10 @@ func (view *SettingsView) makeAPITreeFormatPage(mapMenuToFocusPrmt map[string]tv
 	formPrmt.AddButton(view.Labels["save"], func() {
 		prmt := utils.GetInputFieldForm(formPrmt, view.Labels["patterns"])
 
-		config := view.Event.GetConfig()
+		config := view.AppCtx.GetConfig()
 		config.Pattern = prmt.GetText()
 
-		view.Event.UpdateConfig(config)
+		view.AppCtx.UpdateConfig(config)
 	})
 
 	formFlexPrmt := tview.NewFlex().SetDirection(tview.FlexRow)
@@ -251,11 +251,11 @@ func (view *SettingsView) makeAPITreeFormatPage(mapMenuToFocusPrmt map[string]tv
 	flex.AddItem(formFlexPrmt, 0, 1, false)
 	flex.AddItem(tree, 0, 1, false)
 
-	view.Event.AddListenerConfig["makeAPITreeFormatPage"] = func(data models.Config) {
-		view.Event.PrintTrace("SettingsView.makeAPITreeFormatPage{...}.listener")
+	view.AppCtx.AddListenerConfig["makeAPITreeFormatPage"] = func(data models.Config) {
+		view.AppCtx.PrintTrace("SettingsView.makeAPITreeFormatPage{...}.listener")
 
 		prmt := utils.GetInputFieldForm(formPrmt, view.Labels["patterns"])
-		prmt.SetText(view.Event.GetConfig().Pattern)
+		prmt.SetText(view.AppCtx.GetConfig().Pattern)
 
 		overview(treeAPICpnt, formPrmt)
 	}
@@ -298,7 +298,7 @@ func (view *SettingsView) makeEnvPage(mapMenuToFocusPrmt map[string]tview.Primit
 	selectVariableDropDownPrmtOption := func(variable string) {
 		_, env := utils.GetDropDownFieldForm(formPrmt, view.Labels["envs"]).GetCurrentOption()
 
-		contextVariable := view.Event.GetOutput().Context.FindVariableByEnv(env, variable)
+		contextVariable := view.AppCtx.GetOutput().Context.FindVariableByEnv(env, variable)
 
 		utils.GetInputFieldForm(formPrmt, view.Labels["variable"]).SetText(contextVariable.Variable)
 		utils.GetInputFieldForm(formPrmt, view.Labels["value"]).SetText(contextVariable.Value)
@@ -306,7 +306,7 @@ func (view *SettingsView) makeEnvPage(mapMenuToFocusPrmt map[string]tview.Primit
 	}
 
 	selectVariablesDropDownPrmtOption := func(env string, variable string) {
-		variables := view.Event.GetOutput().Context.GetAllVariables(env)
+		variables := view.AppCtx.GetOutput().Context.GetAllVariables(env)
 
 		variablesDropDownPrmt := utils.GetDropDownFieldForm(formPrmt, view.Labels["variables"])
 		variablesDropDownPrmt.SetOptions(variables, func(option string, index int) {
@@ -331,13 +331,13 @@ func (view *SettingsView) makeEnvPage(mapMenuToFocusPrmt map[string]tview.Primit
 			displayDefault()
 		}
 
-		overview(table, env, view.Event.GetOutput().Context.GetAllKeyValue(env))
+		overview(table, env, view.AppCtx.GetOutput().Context.GetAllKeyValue(env))
 	}
 
 	refreshContext := func(env string, variable string) {
-		view.Event.PrintTrace("SettingsView.makeAPITreeFormatPage{...}.refreshContext")
+		view.AppCtx.PrintTrace("SettingsView.makeAPITreeFormatPage{...}.refreshContext")
 
-		envs := view.Event.GetOutput().Context.GetEnvsName()
+		envs := view.AppCtx.GetOutput().Context.GetEnvsName()
 
 		envsDropDownPrmt := utils.GetDropDownFieldForm(formPrmt, view.Labels["envs"])
 		envsDropDownPrmt.SetOptions(envs, func(option string, index int) {
@@ -390,9 +390,9 @@ func (view *SettingsView) makeEnvPage(mapMenuToFocusPrmt map[string]tview.Primit
 		if newEnv != "" {
 			env = newEnv
 		}
-		context := view.Event.GetOutput().Context
+		context := view.AppCtx.GetOutput().Context
 		context.Add(env, variable, value)
-		view.Event.UpdateContext(context)
+		view.AppCtx.UpdateContext(context)
 
 		refreshContext(env, variable)
 	})
@@ -402,9 +402,9 @@ func (view *SettingsView) makeEnvPage(mapMenuToFocusPrmt map[string]tview.Primit
 		_, env := utils.GetDropDownFieldForm(formPrmt, view.Labels["envs"]).GetCurrentOption()
 		_, variable := utils.GetDropDownFieldForm(formPrmt, view.Labels["variables"]).GetCurrentOption()
 		if variable != "" {
-			context := view.Event.GetOutput().Context
+			context := view.AppCtx.GetOutput().Context
 			context.Remove(env, variable)
-			view.Event.UpdateContext(context)
+			view.AppCtx.UpdateContext(context)
 
 			refreshContext(env, "")
 		}
@@ -415,7 +415,7 @@ func (view *SettingsView) makeEnvPage(mapMenuToFocusPrmt map[string]tview.Primit
 	flex.AddItem(formPrmt, 0, 1, false)
 	flex.AddItem(table, 0, 2, false)
 
-	view.Event.AddContextListener["makeEnvPage"] = func(data models.Context) {
+	view.AppCtx.AddContextListener["makeEnvPage"] = func(data models.Context) {
 		refreshContext("", "")
 	}
 

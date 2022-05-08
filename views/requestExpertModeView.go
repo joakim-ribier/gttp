@@ -11,8 +11,8 @@ import (
 
 // RequestExpertModeView represents the request expert mode view
 type RequestExpertModeView struct {
-	App   *tview.Application
-	Event *models.Event
+	App    *tview.Application
+	AppCtx *models.AppCtx
 
 	Labels map[string]string
 
@@ -21,7 +21,7 @@ type RequestExpertModeView struct {
 }
 
 // NewRequestExpertModeView returns the view for the request expert mode
-func NewRequestExpertModeView(app *tview.Application, ev *models.Event) *RequestExpertModeView {
+func NewRequestExpertModeView(app *tview.Application, ev *models.AppCtx) *RequestExpertModeView {
 	labels := make(map[string]string)
 	labels["menu_content_type_title"] = "Define specific \"Content-Type\""
 	labels["menu_content_type_desc"] = "application/json,text/plain,multipart/f..."
@@ -51,7 +51,7 @@ func NewRequestExpertModeView(app *tview.Application, ev *models.Event) *Request
 
 	return &RequestExpertModeView{
 		App:    app,
-		Event:  ev,
+		AppCtx: ev,
 		Labels: labels,
 	}
 }
@@ -136,7 +136,7 @@ func (view *RequestExpertModeView) makeAddContentTypePage(mapMenuToFocusPrmt map
 
 	// Add "Content-Type" field
 	formPrmt.AddDropDown(view.Labels["contentType"], contentTypeValues, 1, func(option string, index int) {
-		makeRequestData := view.Event.GetMDR()
+		makeRequestData := view.AppCtx.GetMDR()
 		makeRequestData.ContentType = option
 
 		// Update request
@@ -144,7 +144,7 @@ func (view *RequestExpertModeView) makeAddContentTypePage(mapMenuToFocusPrmt map
 	})
 
 	// Add listener to refresh primitive when the MakeRequestData is changing...
-	view.Event.AddListenerMRD["requestExpertModeViewContentTypePage"] = func(makeRequestData models.MakeRequestData) {
+	view.AppCtx.AddListenerMRD["requestExpertModeViewContentTypePage"] = func(makeRequestData models.MakeRequestData) {
 		methodSelectedIndex := contentTypeValues.GetIndex(makeRequestData.ContentType)
 		utils.GetDropDownFieldForm(formPrmt, view.Labels["contentType"]).SetCurrentOption(methodSelectedIndex)
 	}
@@ -190,8 +190,8 @@ func (view *RequestExpertModeView) makeAddContentTypePage(mapMenuToFocusPrmt map
 func (view *RequestExpertModeView) makeAddHeaderPage(mapMenuToFocusPrmt map[string]tview.Primitive) *tview.Flex {
 	// Display headers preview
 	displayPreview := func(textView *tview.TextView) {
-		sortedHeaderKeys := view.Event.GetMDR().MapRequestHeaderKeyValue.ToSortedKeys()
-		header := view.Event.GetMDR().MapRequestHeaderKeyValue
+		sortedHeaderKeys := view.AppCtx.GetMDR().MapRequestHeaderKeyValue.ToSortedKeys()
+		header := view.AppCtx.GetMDR().MapRequestHeaderKeyValue
 
 		var sb strings.Builder
 		for _, key := range sortedHeaderKeys {
@@ -225,7 +225,7 @@ func (view *RequestExpertModeView) makeAddHeaderPage(mapMenuToFocusPrmt map[stri
 	formPrmt.SetBackgroundColor(utils.BackGrayColor)
 
 	selectedEventDropDown := func(key string) {
-		makeRequestData := view.Event.GetMDR()
+		makeRequestData := view.AppCtx.GetMDR()
 		value := makeRequestData.MapRequestHeaderKeyValue[key]
 
 		if item := utils.GetInputFieldForm(formPrmt, view.Labels["key"]); item != nil {
@@ -268,7 +268,7 @@ func (view *RequestExpertModeView) makeAddHeaderPage(mapMenuToFocusPrmt map[stri
 
 	// Add "Add" button
 	formPrmt.AddButton(view.Labels["add"], func() {
-		makeRequestData := view.Event.GetMDR()
+		makeRequestData := view.AppCtx.GetMDR()
 
 		keyFieldPrmt := utils.GetInputFieldForm(formPrmt, view.Labels["key"])
 		valueFieldPrmt := utils.GetInputFieldForm(formPrmt, view.Labels["value"])
@@ -289,7 +289,7 @@ func (view *RequestExpertModeView) makeAddHeaderPage(mapMenuToFocusPrmt map[stri
 
 		dropDrownPrmt := utils.GetDropDownFieldForm(formPrmt, view.Labels["headers"])
 
-		makeRequestData := view.Event.GetMDR()
+		makeRequestData := view.AppCtx.GetMDR()
 		// delete value
 		_, value := dropDrownPrmt.GetCurrentOption()
 		delete(makeRequestData.MapRequestHeaderKeyValue, value)
@@ -298,11 +298,11 @@ func (view *RequestExpertModeView) makeAddHeaderPage(mapMenuToFocusPrmt map[stri
 	})
 
 	// Add listener to refresh primitive when the MakeRequestData is changing...
-	view.Event.AddListenerMRD["requestExpertModeViewHeaderPage"] = func(makeRequestData models.MakeRequestData) {
+	view.AppCtx.AddListenerMRD["requestExpertModeViewHeaderPage"] = func(makeRequestData models.MakeRequestData) {
 		utils.GetInputFieldForm(formPrmt, view.Labels["key"]).SetText("")
 		utils.GetInputFieldForm(formPrmt, view.Labels["value"]).SetText("")
 
-		saveAndRefreshView(view.Event.GetMDR())
+		saveAndRefreshView(view.AppCtx.GetMDR())
 	}
 
 	// Map menu with form
@@ -349,7 +349,7 @@ func (view *RequestExpertModeView) makeAddBodyPage(mapMenuToFocusPrmt map[string
 
 	// Add "Add" button
 	formPrmt.AddButton(view.Labels["add"], func() {
-		makeRequestData := view.Event.GetMDR()
+		makeRequestData := view.AppCtx.GetMDR()
 		makeRequestData.Body = utils.GetInputFieldForm(formPrmt, view.Labels["body"]).GetText()
 
 		// Update request
@@ -358,7 +358,7 @@ func (view *RequestExpertModeView) makeAddBodyPage(mapMenuToFocusPrmt map[string
 	})
 
 	// Add listener to refresh primitive when the MakeRequestData is changing...
-	view.Event.AddListenerMRD["requestExpertModeViewBodyPage"] = func(makeRequestData models.MakeRequestData) {
+	view.AppCtx.AddListenerMRD["requestExpertModeViewBodyPage"] = func(makeRequestData models.MakeRequestData) {
 		utils.GetInputFieldForm(formPrmt, view.Labels["body"]).SetText(makeRequestData.Body)
 		previewPrmt.SetText(makeRequestData.Body)
 	}
@@ -390,11 +390,11 @@ func (view *RequestExpertModeView) makePreviewPage() *tview.Flex {
 	previewPrmt.Box.SetBorderPadding(1, 1, 1, 1)
 
 	// Add listener to refresh primitive when the MakeRequestData is changing...
-	view.Event.AddListenerMRD["requestExpertModeViewPreviewPage"] = func(makeRequestData models.MakeRequestData) {
+	view.AppCtx.AddListenerMRD["requestExpertModeViewPreviewPage"] = func(makeRequestData models.MakeRequestData) {
 		view.displayPreview(previewPrmt, makeRequestData)
 	}
 
-	view.displayPreview(previewPrmt, view.Event.GetMDR())
+	view.displayPreview(previewPrmt, view.AppCtx.GetMDR())
 
 	flexPrmt := tview.NewFlex().SetDirection(tview.FlexRow)
 	flexPrmt.SetBorderPadding(1, 0, 0, 0)
@@ -437,8 +437,8 @@ func (view *RequestExpertModeView) displayPreview(textView *tview.TextView, make
 }
 
 func (view *RequestExpertModeView) updateMDR(data models.MakeRequestData) {
-	view.Event.UpdateMDR(data)
-	if update, is := view.Event.AddListenerMRD["requestExpertModeViewPreviewPage"]; is {
+	view.AppCtx.UpdateMDR(data)
+	if update, is := view.AppCtx.AddListenerMRD["requestExpertModeViewPreviewPage"]; is {
 		update(data)
 	}
 }

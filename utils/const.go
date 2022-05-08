@@ -41,7 +41,7 @@ const (
 	SelectAPIShortcut = JShortcut + " Select API"
 	SettingsShortcut  = "Ctrl+[" + BlueColorName + "::ub]O[white::-] Settings"
 
-	ShortcutD  = "Ctrl+[" + BlueColorName + "::ub]D[white::-] Response View"
+	ShortcutD  = "Ctrl+[" + BlueColorName + "::ub]W[white::-] Response View"
 	ShortcutF  = "Ctrl+[" + BlueColorName + "::ub]F[white::-] Make Request"
 	ShortcutH  = "Ctrl+[" + BlueColorName + "::ub]H[white::-] Expert Mode"
 	ShortcutQ  = "Ctrl+[" + BlueColorName + "::ub]Q[white::-] Exit"
@@ -59,11 +59,10 @@ const (
 
 // Represents data shortcuts to display to the user
 var (
-	MainShortcutsText        = strings.Join([]string{SelectAPIShortcut, ExecuteShortcut, ShortcutF, ShortcutH, ShortcutD, SettingsShortcut, ShortcutQ}, ShortcutSeparator)
-	ResultShortcutsText      = strings.Join([]string{ShortcutR, ShortcutDC, ShortcutDA, ShortcutPressEscape}, ShortcutSeparator)
-	ExpertModeShortcutsText  = strings.Join([]string{ShortcutHSubMenu, ShortcutPressEscape}, ShortcutSeparator)
-	SettingsShortcutsText    = strings.Join([]string{SettingsShortcutSubMenu, ShortcutPressEscape}, ShortcutSeparator)
-	SaveRequestShortcutsText = strings.Join([]string{ShortcutSRSubMenu, ShortcutPressEscape}, ShortcutSeparator)
+	MainShortcutsText       = strings.Join([]string{SelectAPIShortcut, ShortcutF, ShortcutH, ShortcutD, SettingsShortcut, ShortcutQ}, ShortcutSeparator)
+	ResultShortcutsText     = strings.Join([]string{ShortcutR, ShortcutDC, ShortcutDA, ShortcutPressEscape}, ShortcutSeparator)
+	ExpertModeShortcutsText = strings.Join([]string{ShortcutHSubMenu, ShortcutPressEscape}, ShortcutSeparator)
+	SettingsShortcutsText   = strings.Join([]string{SettingsShortcutSubMenu, ShortcutPressEscape}, ShortcutSeparator)
 )
 
 // Represents data to make a new request
